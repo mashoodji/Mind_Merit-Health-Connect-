@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "90938156414",
+    "project_id": "stress-and-gpa-prediction",
+    "storage_bucket": "stress-and-gpa-prediction.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90938156414:android:b3ae764b790af54b767f2f",
+        "android_client_info": {
+          "package_name": "cachet.plugins.health.health_example"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApARyYW2PtRpt_EXO1XhQDofI5Oe45KxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "90938156414-15ab52on45vtv3lhoif7turppukh3t6q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.stressDetection"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90938156414:android:2ab6ff04a0fcbac9767f2f",
+        "android_client_info": {
+          "package_name": "com.example.stress_detection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "90938156414-u83rja107321p4035p48nordntlbu22s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.stress_detection",
+            "certificate_hash": "b92fa71857495203b65d003eec6b80bfdf4b1d44"
+          }
+        },
+        {
+          "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApARyYW2PtRpt_EXO1XhQDofI5Oe45KxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "90938156414-15ab52on45vtv3lhoif7turppukh3t6q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.stressDetection"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

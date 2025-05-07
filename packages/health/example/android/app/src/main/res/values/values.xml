@@ -1,0 +1,9 @@
+<!-- android/app/src/main/res/values/values.xml -->
+<resources>
+    <string name="google_app_id">1:90938156414:android:b3ae764b790af54b767f2f</string>
+    <string name="google_api_key">AIzaSyApARyYW2PtRpt_EXO1XhQDofI5Oe45KxE</string>
+    <string name="firebase_database_url">https://stress-and-gpa-prediction.firebaseio.com</string>
+    <string name="gcm_defaultSenderId">90938156414</string>
+    <string name="project_id">stress-and-gpa-prediction</string>
+    <string name="storage_bucket">stress-and-gpa-prediction.firebasestorage.app</string>
+</resources>
