@@ -2,8 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/api_service.dart';
 import '../utils/colors.dart';
+import 'feature_screen/study_timer.dart';
 
 class StressScreen extends StatefulWidget {
+  final double? averageStudyHours;
+  final double sleepHours;
+  final double activityMinutes;
+
+  const StressScreen({
+    Key? key,
+    this.averageStudyHours,
+    required this.sleepHours,
+    required this.activityMinutes,
+  }) : super(key: key);
+
   @override
   _StressScreenState createState() => _StressScreenState();
 }
@@ -18,6 +30,16 @@ class _StressScreenState extends State<StressScreen> {
 
   String? stressResult;
   Map<String, double>? featureImportances;
+
+  @override
+  void initState() {
+    super.initState();  sleepController.text = widget.sleepHours.toStringAsFixed(1);
+    physicalController.text = widget.activityMinutes.toStringAsFixed(0);
+    // Set the studyController text if averageStudyHours is provided
+    if (widget.averageStudyHours != null) {
+      studyController.text = widget.averageStudyHours!.toStringAsFixed(1);
+    }
+  }
 
   void predictStress() async {
     try {
@@ -131,9 +153,6 @@ class _StressScreenState extends State<StressScreen> {
     );
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -204,6 +223,23 @@ class _StressScreenState extends State<StressScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StudyTimerPage(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor2,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('Check_Study_Hour'),
                   ),
                   OutlinedButton.icon(
                     onPressed: clearData,

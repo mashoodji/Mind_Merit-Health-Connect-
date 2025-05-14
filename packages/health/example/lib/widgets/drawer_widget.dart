@@ -33,24 +33,38 @@ class DrawerWidget extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.school),
-            title: Text("Stress Prediction"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => StressScreen()),
-                );
-              },
-          ),
-          ListTile(
-            leading: Icon(Icons.grade),
-            title: Text("GPA Prediction"),
+            leading: Icon(Icons.health_and_safety, color: Colors.white),
+            title: Text("Stress Prediction", style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => GPAScreen()),
+                MaterialPageRoute(
+                  builder: (context) => StressScreen(
+                    averageStudyHours: null,
+                    sleepHours: 0, // Default value
+                    activityMinutes: 0, // Default value
+                  ),
+                ),
+              );
+            },
+          ),
+
+
+          ListTile(
+            leading: Icon(Icons.school, color: Colors.white),
+            title: Text("GPA Prediction", style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GPAScreen(
+                    averageStudyHours: null,
+                    sleepHours: 0, // Default value
+                    activityMinutes: 0, // Default value
+                  ),
+                ),
               );
             },
           ),

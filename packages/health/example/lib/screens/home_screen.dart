@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../main2.dart';
+import '../health.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/drawer_widget.dart';
 import 'health_connect.dart';
@@ -159,23 +159,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.redAccent,
                     description: 'Monitor your mental health',
                     onTap: () {
-                      // Navigate to Stress Screen when tapped
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => StressScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => StressScreen(
+                            averageStudyHours: null, // or provide a default value
+                            sleepHours: 0, // default value
+                            activityMinutes: 0, // default value
+                          ),
+                        ),
                       );
                     },
                   ),
+
                   predictionCard(
                     title: 'GPA\nPrediction',
                     icon: Icons.bar_chart,
                     color: Colors.green,
                     description: 'Forecast your performance',
                     onTap: () {
-                      // Navigate to GPA Screen when tapped
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => GPAScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => GPAScreen(
+                            averageStudyHours: null, // or provide a default value
+                            sleepHours: 0, // default value
+                            activityMinutes: 0, // default value
+                          ),
+                        ),
                       );
                     },
                   ),

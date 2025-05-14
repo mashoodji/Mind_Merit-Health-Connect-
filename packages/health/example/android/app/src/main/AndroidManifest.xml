@@ -1,9 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Basic permissions -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <!-- Permissions for new android API (Health Connect) -->
+
+    <!-- Health Connect permissions -->
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
     <uses-permission android:name="android.permission.health.WRITE_STEPS"/>
     <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
@@ -14,8 +16,14 @@
     <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
     <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
+
+    <!-- Enhanced Sleep Permissions (critical for sleep stages) -->
     <uses-permission android:name="android.permission.health.READ_SLEEP"/>
     <uses-permission android:name="android.permission.health.WRITE_SLEEP"/>
+    <uses-permission android:name="android.permission.health.READ_SLEEP_STAGE"/>
+    <uses-permission android:name="android.permission.health.WRITE_SLEEP_STAGE"/>
+
+    <!-- Other health permissions -->
     <uses-permission android:name="android.permission.health.READ_SPEED"/>
     <uses-permission android:name="android.permission.health.WRITE_SPEED"/>
     <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
@@ -54,7 +62,7 @@
     <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS"/>
     <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS"/>
 
-    <!-- For reading historical data - more than 30 days ago since permission given -->
+    <!-- For reading historical data -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
 
     <application
@@ -72,9 +80,9 @@
             android:windowSoftInputMode="adjustResize">
             <!-- Theme to apply as soon as Flutter begins rendering frames -->
             <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme"
+                />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -101,16 +109,14 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <!-- Required to query activities that can process text, see:
-         https://developer.android.com/training/package-visibility and
-         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
 
-         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <!-- Health Connect specific queries -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Corrected Health Connect package name -->
         <package android:name="com.google.android.apps.healthdata" />
         <intent>
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />

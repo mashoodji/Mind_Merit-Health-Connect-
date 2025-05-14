@@ -32,7 +32,13 @@ class BottomNavBar extends StatelessWidget {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => StressScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => StressScreen(
+                        averageStudyHours: null,
+                        sleepHours: 0, // Default value
+                        activityMinutes: 0, // Default value
+                      ),
+                    ),
                   );
                 },
               ),
@@ -43,7 +49,13 @@ class BottomNavBar extends StatelessWidget {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => GPAScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => GPAScreen(
+                        averageStudyHours: null,
+                        sleepHours: 0, // Default value
+                        activityMinutes: 0, // Default value
+                      ),
+                    ),
                   );
                 },
               ),
@@ -86,16 +98,32 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       backgroundColor: Colors.black,
-      selectedItemColor: Colors.black26,
+      selectedItemColor: Colors.white,
       unselectedItemColor: Colors.grey,
       currentIndex: currentIndex,
       onTap: (index) => _navigateToScreen(context, index),
+      type: BottomNavigationBarType.fixed,
       items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        BottomNavigationBarItem(icon: Icon(Icons.analytics), label: "Prediction"), // Modal
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notifications"),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: "Home",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: "Profile",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.analytics),
+          label: "Predict",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          label: "Alerts",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: "Settings",
+        ),
       ],
     );
   }
