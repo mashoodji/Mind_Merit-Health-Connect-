@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
-// import 'package:stress_detection/utils/colors.dart';
 // import '../services/api_service.dart';
+// import '../utils/colors.dart';
 //
 // class StressPrediction extends StatefulWidget {
 //   const StressPrediction({super.key});
