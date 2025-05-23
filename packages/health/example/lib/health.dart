@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:health_example/screens/feature_screen/study_timer.dart';
 import 'package:health_example/screens/gpa_screen.dart';
+import 'package:health_example/screens/home_screen.dart';
 import 'package:health_example/screens/stress_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -431,6 +432,13 @@ class HealthAppState extends State<HealthApp> {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Health Tracker', style: TextStyle(fontWeight: FontWeight.bold)),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            ),
+          ),
           centerTitle: true,
           elevation: 0,
           backgroundColor: primaryColor,

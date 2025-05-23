@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://10.234.43.3:5000";
+  static const String baseUrl = "http://10.84.76.86:5000";
 
   // Modified method to return both stress level and feature importance
   static Future<Map<String, dynamic>> predictStress({

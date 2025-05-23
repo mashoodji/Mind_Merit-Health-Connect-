@@ -14,6 +14,58 @@
       },
       "oauth_client": [
         {
+          "client_id": "90938156414-m6id4u6vb8m2lvdvi7ude8meq72mpp2m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "cachet.plugins.health.health_example",
+            "certificate_hash": "b92fa71857495203b65d003eec6b80bfdf4b1d44"
+          }
+        },
+        {
+          "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApARyYW2PtRpt_EXO1XhQDofI5Oe45KxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "90938156414-15ab52on45vtv3lhoif7turppukh3t6q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.stressDetection"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90938156414:android:f6c406a55ef13215767f2f",
+        "android_client_info": {
+          "package_name": "com.example.health_example"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "90938156414-3egv2c8vr6f6rkvjde24n4coo5ispj5g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.health_example",
+            "certificate_hash": "b92fa71857495203b65d003eec6b80bfdf4b1d44"
+          }
+        },
+        {
           "client_id": "90938156414-f28p9hqfam5381qeifa28pgu42lcdvg6.apps.googleusercontent.com",
           "client_type": 3
         }
