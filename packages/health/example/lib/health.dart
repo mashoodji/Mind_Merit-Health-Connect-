@@ -566,8 +566,9 @@ class HealthAppState extends State<HealthApp> {
                         MaterialPageRoute(
                           builder: (context) => StressScreen(
                             averageStudyHours: null,
-                            sleepHours: _sleepHours,
-                            activityMinutes: _activityMinutes,
+                            sleepHours: 0,
+                            activityMinutes: 0,
+                            socialHours: 0,  // Add default value
                           ),
                         ),
                       );

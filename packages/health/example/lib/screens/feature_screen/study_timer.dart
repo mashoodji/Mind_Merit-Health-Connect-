@@ -230,7 +230,6 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
               ),
             ),
             SizedBox(height: 20),
-            // Stress Prediction Button
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -240,13 +239,13 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                       averageStudyHours: averageStudyHours,
                       sleepHours: 0,
                       activityMinutes: 0,
+                      socialHours: 0,
                     ),
                   ),
                 );
               },
               child: Text('Stress Prediction'),
             ),
-
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

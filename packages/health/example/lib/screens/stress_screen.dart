@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import FirebaseFirestore
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/api_service.dart';
 import '../utils/colors.dart';
 import 'feature_screen/study_timer.dart';
@@ -10,12 +10,14 @@ class StressScreen extends StatefulWidget {
   final double? averageStudyHours;
   final double sleepHours;
   final double activityMinutes;
+  final double socialHours;
 
   const StressScreen({
     Key? key,
     this.averageStudyHours,
     required this.sleepHours,
     required this.activityMinutes,
+    required this.socialHours,
   }) : super(key: key);
 
   @override
@@ -32,28 +34,29 @@ class _StressScreenState extends State<StressScreen> {
 
   String? stressResult;
   Map<String, double>? featureImportances;
-  String? _fetchedGpaMessage; // To display GPA or error messages
+  String? _fetchedGpaMessage;
 
   @override
   void initState() {
     super.initState();
     sleepController.text = widget.sleepHours.toStringAsFixed(1);
     physicalController.text = widget.activityMinutes.toStringAsFixed(0);
+    socialController.text = widget.socialHours.toStringAsFixed(1);
+
     if (widget.averageStudyHours != null) {
       studyController.text = widget.averageStudyHours!.toStringAsFixed(1);
     }
   }
 
-  // Function to fetch CGPA from Firestore
   Future<double?> _fetchUserCGPAFromFirestore() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser != null && currentUser.email != null) {
       String userEmail = currentUser.email!;
-      if (userEmail.endsWith(".edu.pk")) { // Or your specific university domain
+      if (userEmail.endsWith(".edu.pk")) {
         try {
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection('student_cgpa') // Your Firestore collection name
+              .collection('student_cgpa')
               .where('email', isEqualTo: userEmail)
               .limit(1)
               .get();
@@ -99,15 +102,13 @@ class _StressScreenState extends State<StressScreen> {
     double? cgpa = await _fetchUserCGPAFromFirestore();
     if (cgpa != null) {
       setState(() {
-        gpaController.text = cgpa.toStringAsFixed(2); // Format to 2 decimal places
+        gpaController.text = cgpa.toStringAsFixed(2);
         _fetchedGpaMessage = "Fetched GPA: ${cgpa.toStringAsFixed(2)}";
       });
     }
-    // Error messages are set directly in _fetchUserCGPAFromFirestore
   }
 
   void predictStress() async {
-    // Ensure GPA is not empty before parsing
     if (gpaController.text.isEmpty) {
       setState(() {
         stressResult = "Error: GPA field cannot be empty.";
@@ -115,19 +116,17 @@ class _StressScreenState extends State<StressScreen> {
       });
       return;
     }
-    // Basic validation for other fields (optional, but good practice)
     if (studyController.text.isEmpty ||
         extracurricularController.text.isEmpty ||
         sleepController.text.isEmpty ||
         socialController.text.isEmpty ||
         physicalController.text.isEmpty) {
       setState(() {
-        stressResult = "Error: All fields except GPA must be filled.";
+        stressResult = "Error: All fields must be filled.";
         featureImportances = null;
       });
       return;
     }
-
 
     try {
       final result = await ApiService.predictStress(
@@ -154,11 +153,6 @@ class _StressScreenState extends State<StressScreen> {
   void clearData() {
     studyController.clear();
     extracurricularController.clear();
-    // Keep sleep and physical activity if they are pre-filled from previous screen
-    // Or clear them if that's the desired behavior:
-    // sleepController.clear();
-    // physicalController.clear();
-    // Re-initialize with widget data if you want to reset to initial values
     sleepController.text = widget.sleepHours.toStringAsFixed(1);
     physicalController.text = widget.activityMinutes.toStringAsFixed(0);
     if (widget.averageStudyHours != null) {
@@ -166,14 +160,12 @@ class _StressScreenState extends State<StressScreen> {
     } else {
       studyController.clear();
     }
-
-
     socialController.clear();
     gpaController.clear();
     setState(() {
       stressResult = null;
       featureImportances = null;
-      _fetchedGpaMessage = null; // Clear GPA message as well
+      _fetchedGpaMessage = null;
     });
   }
 
@@ -188,7 +180,7 @@ class _StressScreenState extends State<StressScreen> {
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      keyboardType: TextInputType.numberWithOptions(decimal: true), // Allow decimals
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
     );
   }
 
@@ -218,25 +210,25 @@ class _StressScreenState extends State<StressScreen> {
           }),
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 30), // Adjusted reservedSize
+              sideTitles: SideTitles(showTitles: true, reservedSize: 30),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 40, // Space for titles
+                reservedSize: 40,
                 getTitlesWidget: (value, meta) {
                   final idx = value.toInt();
                   if (idx >= 0 && idx < labels.length) {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        labels[idx], // Fetch corresponding label
+                        labels[idx],
                         style: TextStyle(fontSize: 10),
-                        overflow: TextOverflow.ellipsis, // Handle long labels
+                        overflow: TextOverflow.ellipsis,
                       ),
                     );
                   }
-                  return Container(); // Return empty container if out of range
+                  return Container();
                 },
               ),
             ),
@@ -261,7 +253,6 @@ class _StressScreenState extends State<StressScreen> {
       appBar: AppBar(
         title: Text("Stress Prediction"),
         backgroundColor: AppColors.primaryColor2,
-        foregroundColor: Colors.white, // Ensure title is visible
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -285,8 +276,6 @@ class _StressScreenState extends State<StressScreen> {
                 ),
               ),
               SizedBox(height: 20),
-
-              // Inputs
               Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -296,26 +285,22 @@ class _StressScreenState extends State<StressScreen> {
                     children: [
                       buildTextField("Study Hours", studyController, Icons.book),
                       SizedBox(height: 12),
-                      buildTextField("Extracurricular Hours", extracurricularController, Icons.sports_soccer), // Changed icon
+                      buildTextField("Extracurricular Hours", extracurricularController, Icons.sports),
                       SizedBox(height: 12),
                       buildTextField("Sleep Hours", sleepController, Icons.nightlight_round),
                       SizedBox(height: 12),
                       buildTextField("Social Hours", socialController, Icons.people),
                       SizedBox(height: 12),
-                      buildTextField("Physical Activity (minutes)", physicalController, Icons.fitness_center), // Clarified unit
+                      buildTextField("Physical Activity Hours", physicalController, Icons.fitness_center),
                       SizedBox(height: 12),
                       buildTextField("GPA", gpaController, Icons.grade),
-                      SizedBox(height: 10),
-                      // Fill GPA Button
-                      ElevatedButton.icon(
+                      SizedBox(height: 12),
+                      ElevatedButton(
                         onPressed: _fillGpaFromFirestore,
-                        icon: Icon(Icons.download_done),
-                        label: Text("Fill GPA from University"),
+                        child: Text("Fetch GPA from Database"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentColor, // Choose a distinct color
+                          backgroundColor: AppColors.primaryColor2,
                           foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
                     ],
@@ -323,12 +308,10 @@ class _StressScreenState extends State<StressScreen> {
                 ),
               ),
               SizedBox(height: 20),
-
-              // Action Buttons
-              Wrap( // Using Wrap for better responsiveness if buttons overflow
+              Wrap(
                 alignment: WrapAlignment.spaceEvenly,
-                spacing: 10, // Horizontal spacing
-                runSpacing: 10, // Vertical spacing if they wrap
+                spacing: 10,
+                runSpacing: 10,
                 children: [
                   ElevatedButton.icon(
                     onPressed: predictStress,
@@ -356,7 +339,7 @@ class _StressScreenState extends State<StressScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Study Timer'), // Changed label
+                    child: Text('Study Timer'),
                   ),
                   OutlinedButton.icon(
                     onPressed: clearData,
@@ -372,8 +355,6 @@ class _StressScreenState extends State<StressScreen> {
                 ],
               ),
               SizedBox(height: 20),
-
-              // Fetched GPA Message Display
               if (_fetchedGpaMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 15.0),
@@ -381,16 +362,17 @@ class _StressScreenState extends State<StressScreen> {
                     _fetchedGpaMessage!,
                     style: TextStyle(
                       fontSize: 15,
-                      color: _fetchedGpaMessage!.startsWith("Error") || _fetchedGpaMessage!.startsWith("No CGPA") || _fetchedGpaMessage!.startsWith("Not a university") || _fetchedGpaMessage!.startsWith("User not logged in")
+                      color: _fetchedGpaMessage!.startsWith("Error") ||
+                          _fetchedGpaMessage!.startsWith("No CGPA") ||
+                          _fetchedGpaMessage!.startsWith("Not a university") ||
+                          _fetchedGpaMessage!.startsWith("User not logged in")
                           ? AppColors.errorColor2
-                          : AppColors.primaryColor2, // Or another success color
+                          : AppColors.primaryColor2,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
-
-              // Result
               if (stressResult != null)
                 Container(
                   padding: EdgeInsets.all(15),
@@ -420,7 +402,7 @@ class _StressScreenState extends State<StressScreen> {
                     ],
                   ),
                 ),
-              SizedBox(height: 20), // Added some bottom padding
+              SizedBox(height: 20),
             ],
           ),
         ),

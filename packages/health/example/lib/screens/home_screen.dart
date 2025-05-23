@@ -54,14 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: const Text('Time spent with friends/family',
+              title: Text('Time spent with friends/family',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('${tempHours.toStringAsFixed(1)} hours',
-                      style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 16),
+                      style: TextStyle(fontSize: 16)),
+                  SizedBox(height: 16),
                   Slider(
                     value: tempHours,
                     min: 0,
@@ -76,10 +76,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              actions: [
+              actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel',
+                  child: Text('Cancel',
                       style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _saveSocialHours(tempHours);
                     Navigator.pop(context);
                   },
-                  child: const Text('Save',
+                  child: Text('Save',
                       style: TextStyle(color: Colors.white)),
                 ),
               ],
@@ -137,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: CustomScrollView(
         slivers: [
-          // App Bar with Drawer
           SliverAppBar(
             backgroundColor: Colors.white,
             elevation: 1,
@@ -185,41 +184,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-
-          // Main Content
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Greeting Section
                 _buildGreetingSection(theme),
                 const SizedBox(height: 30),
-
-                // Main Card
                 _buildMainCard(),
                 const SizedBox(height: 30),
-
-                // Social Hours Section
                 _buildSocialHoursCard(),
                 const SizedBox(height: 30),
-
-                // Prediction Cards
                 _buildPredictionCards(),
                 const SizedBox(height: 30),
-
-                // Motivational Quote
                 _buildMotivationalQuote(),
                 const SizedBox(height: 30),
-
-                // Recent Predictions Header
                 Text('Recent Predictions 📊',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     )),
                 const SizedBox(height: 20),
-
-                // Stress Chart
                 _buildChartCard(
                   title: 'Stress Levels',
                   data: [
@@ -237,8 +221,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   minY: 0,
                 ),
                 const SizedBox(height: 20),
-
-                // GPA Chart
                 _buildChartCard(
                   title: 'GPA Progress',
                   data: [
@@ -339,7 +321,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         horizontal: 16, vertical: 10),
                   ),
                   onPressed: () {
-                    // Navigate to prediction screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StressScreen(
+                          averageStudyHours: null,
+                          sleepHours: 0,
+                          activityMinutes: 0,
+                          socialHours: _socialHours,
+                        ),
+                      ),
+                    );
                   },
                   child: const Text('Get Started',
                       style: TextStyle(
@@ -351,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          Image.asset('assets/images/3.png', height: 130),
+          Image.asset('assets/images/3.png', height: 200),
         ],
       ),
     );
@@ -433,10 +425,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const StressScreen(
+                builder: (context) => StressScreen(
                   averageStudyHours: null,
                   sleepHours: 0,
                   activityMinutes: 0,
+                  socialHours: _socialHours,
                 ),
               ),
             );

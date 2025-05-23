@@ -35,8 +35,9 @@ class BottomNavBar extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => StressScreen(
                         averageStudyHours: null,
-                        sleepHours: 0, // Default value
-                        activityMinutes: 0, // Default value
+                        sleepHours: 0,
+                        activityMinutes: 0,
+                        socialHours: 0,  // Add default value
                       ),
                     ),
                   );
