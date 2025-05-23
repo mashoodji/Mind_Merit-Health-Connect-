@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _emailController.text = prefs.getString('email') ?? '';
       _passwordController.text = prefs.getString('password') ?? '';
-      _rememberMe = prefs.getBool('rememberMe') ?? false;
+      _rememberMe = prefs.getBool('RrememberMe') ?? false;
     });
   }
 
