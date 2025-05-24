@@ -7,29 +7,32 @@ class OnboardingPage extends StatelessWidget {
   final String description;
 
   const OnboardingPage({
-    Key? key,
+    super.key,
     required this.animationUrl,
     required this.title,
     required this.description,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add horizontal padding
+      padding: const EdgeInsets.symmetric(
+          horizontal: 16.0), // Add horizontal padding
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Use a SizedBox with a fixed height for the animation
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4, // Adjust the height as needed (e.g., 40% of screen height)
+            height: MediaQuery.of(context).size.height *
+                0.4, // Adjust the height as needed (e.g., 40% of screen height)
             child: Lottie.network(
               animationUrl,
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 16), // Reduced spacing between animation and title
+          const SizedBox(
+              height: 16), // Reduced spacing between animation and title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Text(
@@ -41,13 +44,17 @@ class OnboardingPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8), // Reduced spacing between title and description
+          const SizedBox(
+              height: 8), // Reduced spacing between title and description
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 23),
             child: Text(
               description,
               textAlign: TextAlign.start,
-              style: TextStyle(fontSize: 16,color: Colors.grey[600],fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold),
             ),
           ),
         ],

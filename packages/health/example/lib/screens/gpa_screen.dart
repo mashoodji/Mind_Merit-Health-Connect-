@@ -9,11 +9,11 @@ class GPAScreen extends StatefulWidget {
   final double activityMinutes;
 
   const GPAScreen({
-    Key? key,
+    super.key,
     this.averageStudyHours,
     required this.sleepHours,
     required this.activityMinutes,
-  }) : super(key: key);
+  });
 
   @override
   _GPAScreenState createState() => _GPAScreenState();
@@ -70,7 +70,8 @@ class _GPAScreenState extends State<GPAScreen> {
     });
   }
 
-  Widget buildInputField(String label, IconData icon, TextEditingController controller) {
+  Widget buildInputField(
+      String label, IconData icon, TextEditingController controller) {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -100,11 +101,16 @@ class _GPAScreenState extends State<GPAScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            buildInputField("Study Hours", FontAwesomeIcons.book, studyController),
-            buildInputField("Extracurricular Hours", FontAwesomeIcons.basketballBall, extracurricularController),
-            buildInputField("Sleep Hours", FontAwesomeIcons.bed, sleepController),
-            buildInputField("Social Hours", FontAwesomeIcons.users, socialController),
-            buildInputField("Physical Activity Hours", FontAwesomeIcons.running, physicalController),
+            buildInputField(
+                "Study Hours", FontAwesomeIcons.book, studyController),
+            buildInputField("Extracurricular Hours",
+                FontAwesomeIcons.basketballBall, extracurricularController),
+            buildInputField(
+                "Sleep Hours", FontAwesomeIcons.bed, sleepController),
+            buildInputField(
+                "Social Hours", FontAwesomeIcons.users, socialController),
+            buildInputField("Physical Activity Hours", FontAwesomeIcons.running,
+                physicalController),
             SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -113,27 +119,26 @@ class _GPAScreenState extends State<GPAScreen> {
                   onPressed: predictGPA,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: EdgeInsets.symmetric(vertical: 14, horizontal: 30),
                   ),
                   child: Text("Predict GPA", style: TextStyle(fontSize: 18)),
                 ),
-
                 ElevatedButton(
-
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => StudyTimerPage(),
-
                       ),
                     );
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.redAccent,
                     side: BorderSide(color: Colors.redAccent),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: EdgeInsets.symmetric(vertical: 14, horizontal: 30),
                   ),
                   child: Text('Get_Study'),
@@ -143,7 +148,8 @@ class _GPAScreenState extends State<GPAScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.redAccent,
                     side: BorderSide(color: Colors.redAccent),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: EdgeInsets.symmetric(vertical: 14, horizontal: 30),
                   ),
                   child: Text("Clear", style: TextStyle(fontSize: 18)),
@@ -152,20 +158,25 @@ class _GPAScreenState extends State<GPAScreen> {
             ),
             SizedBox(height: 20),
             gpaResult == null
-                ? Text("Enter values to predict GPA", style: TextStyle(fontSize: 16, color: Colors.grey))
+                ? Text("Enter values to predict GPA",
+                    style: TextStyle(fontSize: 16, color: Colors.grey))
                 : Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              color: Colors.lightBlueAccent,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Predicted GPA: $gpaResult",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    color: Colors.lightBlueAccent,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Predicted GPA: $gpaResult",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),

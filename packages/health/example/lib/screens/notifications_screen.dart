@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../widgets/bottom_nav_bar.dart';
 
 class NotificationsScreen extends StatefulWidget {
+  const NotificationsScreen({super.key});
+
   @override
   _NotificationsScreenState createState() => _NotificationsScreenState();
 }
@@ -12,9 +14,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   final List<Map<String, String>> notifications = [
     {"message": "Your result is available now.", "time": "2024-03-01 14:30"},
-    {"message": "Parent-teacher meeting scheduled for Monday.", "time": "2024-03-01 10:15"},
-    {"message": "Your profile information has been updated.", "time": "2024-02-28 18:45"},
-    {"message": "New assignment uploaded by your teacher.", "time": "2024-02-27 09:20"},
+    {
+      "message": "Parent-teacher meeting scheduled for Monday.",
+      "time": "2024-03-01 10:15"
+    },
+    {
+      "message": "Your profile information has been updated.",
+      "time": "2024-02-28 18:45"
+    },
+    {
+      "message": "New assignment uploaded by your teacher.",
+      "time": "2024-02-27 09:20"
+    },
   ];
 
   String formatTime(String timestamp) {
@@ -36,7 +47,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Navigator.pushReplacementNamed(context, '/profile');
           break;
         case 2:
-        // Handle modal for prediction options in BottomNavBar
+          // Handle modal for prediction options in BottomNavBar
           break;
         case 3:
           break; // Stay on the same screen
@@ -69,7 +80,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         itemBuilder: (context, index) {
           return Card(
             margin: EdgeInsets.symmetric(vertical: 8.0),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             elevation: 3,
             child: ListTile(
               leading: Icon(Icons.notifications_active, color: Colors.blue),
@@ -81,7 +93,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 formatTime(notifications[index]["time"]!),
                 style: TextStyle(color: Colors.grey[600]),
               ),
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              trailing:
+                  Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
             ),
           );
         },

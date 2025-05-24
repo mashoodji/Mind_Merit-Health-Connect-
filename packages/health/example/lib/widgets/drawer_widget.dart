@@ -5,6 +5,8 @@ import 'package:health_example/screens/stress_screen.dart';
 import '../screens/gpa_screen.dart';
 
 class DrawerWidget extends StatelessWidget {
+  const DrawerWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -17,7 +19,8 @@ class DrawerWidget extends StatelessWidget {
               children: [
                 Icon(Icons.person, size: 50, color: Colors.white),
                 SizedBox(height: 10),
-                Text("Student Name", style: TextStyle(color: Colors.white, fontSize: 18)),
+                Text("Student Name",
+                    style: TextStyle(color: Colors.white, fontSize: 18)),
               ],
             ),
           ),
@@ -34,7 +37,8 @@ class DrawerWidget extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.health_and_safety, color: Colors.white),
-            title: Text("Stress Prediction", style: TextStyle(color: Colors.white)),
+            title: Text("Stress Prediction",
+                style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -44,17 +48,16 @@ class DrawerWidget extends StatelessWidget {
                     averageStudyHours: null,
                     sleepHours: 0,
                     activityMinutes: 0,
-                    socialHours: 0,  // Add default value
+                    socialHours: 0, // Add default value
                   ),
                 ),
               );
             },
           ),
-
-
           ListTile(
             leading: Icon(Icons.school, color: Colors.white),
-            title: Text("GPA Prediction", style: TextStyle(color: Colors.white)),
+            title:
+                Text("GPA Prediction", style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(

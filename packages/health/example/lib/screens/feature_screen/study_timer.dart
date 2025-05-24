@@ -7,6 +7,8 @@ import '../gpa_screen.dart';
 import '../stress_screen.dart';
 
 class StudyTimerPage extends StatefulWidget {
+  const StudyTimerPage({super.key});
+
   @override
   _StudyTimerPageState createState() => _StudyTimerPageState();
 }
@@ -53,7 +55,8 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
       final minutes = now.difference(_studyStart!).inMinutes;
       final key = _formatDate(now);
 
-      _dailyMinutes.update(key, (value) => value + minutes, ifAbsent: () => minutes);
+      _dailyMinutes.update(key, (value) => value + minutes,
+          ifAbsent: () => minutes);
       _saveStudyData();
 
       setState(() {
@@ -69,7 +72,8 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
       final minutes = manualHours * 60;
       final key = _formatDate(_selectedDate);
 
-      _dailyMinutes.update(key, (value) => value + minutes, ifAbsent: () => minutes);
+      _dailyMinutes.update(key, (value) => value + minutes,
+          ifAbsent: () => minutes);
       _saveStudyData();
 
       setState(() {
@@ -82,18 +86,21 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
       '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
 
   List<Widget> _buildStudySummary() {
-    final sortedKeys = _dailyMinutes.keys.toList()..sort((a, b) => b.compareTo(a));
+    final sortedKeys = _dailyMinutes.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
     return sortedKeys.take(7).map((date) {
       final hrs = (_dailyMinutes[date]! / 60).toStringAsFixed(1);
       return ListTile(
         title: Text(date, style: TextStyle(fontWeight: FontWeight.bold)),
-        trailing: Text('$hrs hrs', style: TextStyle(fontWeight: FontWeight.w600)),
+        trailing:
+            Text('$hrs hrs', style: TextStyle(fontWeight: FontWeight.w600)),
       );
     }).toList();
   }
 
   double _calculateAverageStudyHours() {
-    final sortedKeys = _dailyMinutes.keys.toList()..sort((a, b) => b.compareTo(a));
+    final sortedKeys = _dailyMinutes.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
     final recentKeys = sortedKeys.take(7).toList();
 
     if (recentKeys.isEmpty) return 0;
@@ -157,7 +164,8 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'Enter study hours',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       prefixIcon: Icon(Icons.access_time),
                       filled: true,
                       fillColor: Colors.white,
@@ -179,13 +187,17 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
               child: Column(
                 children: [
                   Text(
-                    _isStudying ? '🟢 Session is Active' : '🔴 Session not started.',
+                    _isStudying
+                        ? '🟢 Session is Active'
+                        : '🔴 Session not started.',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 12),
                   ElevatedButton.icon(
                     onPressed: _isStudying ? _stopStudy : _startStudy,
-                    icon: Icon(_isStudying ? Icons.stop_circle : Icons.play_circle_fill),
+                    icon: Icon(_isStudying
+                        ? Icons.stop_circle
+                        : Icons.play_circle_fill),
                     label: Text(_isStudying ? 'Stop Session' : 'Start Session'),
                     style: _buttonStyle(
                       primary: _isStudying ? Colors.redAccent : Colors.green,
@@ -205,7 +217,8 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                         _showSummary = !_showSummary;
                       });
                     },
-                    icon: Icon(_showSummary ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(
+                        _showSummary ? Icons.visibility_off : Icons.visibility),
                     label: Text(_showSummary ? 'Hide Summary' : 'Show Summary'),
                     style: _buttonStyle(primary: Color(0xFF1976D2)),
                   ),
@@ -213,7 +226,8 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                     SizedBox(height: 15),
                     Text(
                       'Last 7 Days',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Divider(),
                     SizedBox(
@@ -223,7 +237,10 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                     SizedBox(height: 12),
                     Text(
                       '📊 Average: ${averageStudyHours.toStringAsFixed(1)} hrs/day',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.indigo),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.indigo),
                     ),
                   ],
                 ],
@@ -267,7 +284,8 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
     );
   }
 
-  Widget _buildCard({required String title, required Widget child, required IconData icon}) {
+  Widget _buildCard(
+      {required String title, required Widget child, required IconData icon}) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -283,7 +301,10 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
               SizedBox(width: 10),
               Text(
                 title,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent),
               ),
             ],
           ),

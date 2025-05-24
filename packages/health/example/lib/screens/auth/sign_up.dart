@@ -7,6 +7,8 @@ import 'package:lottie/lottie.dart';
 import 'package:health_example/screens/auth/login_screen.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -39,7 +41,8 @@ class _SignUpPageState extends State<SignUpPage> {
     });
   }
 
-  Future<void> _saveCredentials(String username, String email, String password) async {
+  Future<void> _saveCredentials(
+      String username, String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
     if (_rememberMe) {
       await prefs.setString('saved_username', username);
@@ -62,7 +65,8 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -79,7 +83,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
       _showSnackBar("Account created successfully!", success: true);
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => LoginPage()));
       });
     } catch (e) {
       _showSnackBar("Error: ${e.toString()}");
@@ -91,13 +96,15 @@ class _SignUpPageState extends State<SignUpPage> {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
       User? user = userCredential.user;
 
       if (user != null) {
@@ -115,7 +122,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
       _showSnackBar("Google Sign-In Successful!", success: true);
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => LoginPage()));
       });
     } catch (e) {
       _showSnackBar("Google Sign-In failed: ${e.toString()}");
@@ -144,7 +152,8 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _navigateToLogin() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => LoginPage()));
   }
 
   @override
@@ -158,12 +167,16 @@ class _SignUpPageState extends State<SignUpPage> {
             children: [
               SizedBox(height: 10),
               Center(
-                child: Lottie.asset('assets/animations/signup.json', height: 450),
+                child:
+                    Lottie.asset('assets/animations/signup.json', height: 450),
               ),
               SizedBox(height: 0),
               Text(
                 "Register",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
               SizedBox(height: 5),
               Text(
@@ -181,13 +194,16 @@ class _SignUpPageState extends State<SignUpPage> {
                   prefixIcon: Icon(Icons.person, color: Colors.grey),
                   filled: true,
                   fillColor: Colors.grey.shade200,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none),
                 ),
-                validator: (value) => value!.isEmpty ? "Please enter your User-Name" : null,
+                validator: (value) =>
+                    value!.isEmpty ? "Please enter your User-Name" : null,
               ),
 
               SizedBox(height: 15),
-                // Email Field
+              // Email Field
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -195,9 +211,12 @@ class _SignUpPageState extends State<SignUpPage> {
                   prefixIcon: Icon(Icons.email, color: Colors.grey),
                   filled: true,
                   fillColor: Colors.grey.shade200,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none),
                 ),
-                validator: (value) => value!.isEmpty ? "Please enter your email" : null,
+                validator: (value) =>
+                    value!.isEmpty ? "Please enter your email" : null,
               ),
               SizedBox(height: 15),
 
@@ -213,13 +232,17 @@ class _SignUpPageState extends State<SignUpPage> {
                       _obscureText ? Icons.visibility_off : Icons.visibility,
                       color: _obscureText ? Colors.grey : Colors.blueAccent,
                     ),
-                    onPressed: () => setState(() => _obscureText = !_obscureText),
+                    onPressed: () =>
+                        setState(() => _obscureText = !_obscureText),
                   ),
                   filled: true,
                   fillColor: Colors.grey.shade200,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none),
                 ),
-                validator: (value) => value!.isEmpty ? "Please enter password" : null,
+                validator: (value) =>
+                    value!.isEmpty ? "Please enter password" : null,
               ),
               // SizedBox(height: 10),
               //
@@ -238,7 +261,7 @@ class _SignUpPageState extends State<SignUpPage> {
               //     ),
               //   ],
               // ),
-               SizedBox(height: 30),
+              SizedBox(height: 30),
 
               SizedBox(
                 width: double.infinity,
@@ -247,9 +270,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text("Sign Up", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: Text("Sign Up",
+                      style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
 
@@ -259,12 +284,15 @@ class _SignUpPageState extends State<SignUpPage> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _signInWithGoogle,
-                  icon: Image.asset('assets/images/google_icon.png', height: 24),
-                  label: Text("Sign Up with Google", style: TextStyle(fontSize: 16, color: Colors.black)),
+                  icon:
+                      Image.asset('assets/images/google_icon.png', height: 24),
+                  label: Text("Sign Up with Google",
+                      style: TextStyle(fontSize: 16, color: Colors.black)),
                   style: OutlinedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -276,7 +304,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   Text("Already have an account?"),
                   TextButton(
                     onPressed: _navigateToLogin,
-                    child: Text("Sign In", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                    child: Text("Sign In",
+                        style: TextStyle(
+                            color: Colors.blueAccent,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -287,7 +318,9 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _buildTextField(String hintText, IconData icon, TextEditingController controller, {bool isPassword = false}) {
+  Widget _buildTextField(
+      String hintText, IconData icon, TextEditingController controller,
+      {bool isPassword = false}) {
     return TextField(
       controller: controller,
       obscureText: isPassword ? _obscureText : false,

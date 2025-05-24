@@ -10,7 +10,8 @@ class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
 
-  BottomNavBar({required this.currentIndex, required this.onTap});
+  const BottomNavBar(
+      {super.key, required this.currentIndex, required this.onTap});
 
   void _showPredictionOptions(BuildContext context) {
     showModalBottomSheet(
@@ -27,7 +28,8 @@ class BottomNavBar extends StatelessWidget {
             children: [
               ListTile(
                 leading: Icon(Icons.health_and_safety, color: Colors.white),
-                title: Text("Stress Prediction", style: TextStyle(color: Colors.white)),
+                title: Text("Stress Prediction",
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -37,7 +39,7 @@ class BottomNavBar extends StatelessWidget {
                         averageStudyHours: null,
                         sleepHours: 0,
                         activityMinutes: 0,
-                        socialHours: 0,  // Add default value
+                        socialHours: 0, // Add default value
                       ),
                     ),
                   );
@@ -45,7 +47,8 @@ class BottomNavBar extends StatelessWidget {
               ),
               ListTile(
                 leading: Icon(Icons.school, color: Colors.white),
-                title: Text("GPA Prediction", style: TextStyle(color: Colors.white)),
+                title: Text("GPA Prediction",
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(

@@ -3,6 +3,8 @@ import '../widgets/bottom_nav_bar.dart'; // Import BottomNavBar
 import '../screens/home_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +26,8 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: AssetImage("assets/images/profile.jpg"), // Add your image asset
+                backgroundImage: AssetImage(
+                    "assets/images/profile.jpg"), // Add your image asset
               ),
             ),
             SizedBox(height: 16),
@@ -59,7 +62,8 @@ class ProfileScreen extends StatelessWidget {
           if (index != 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen()), // Adjust as needed
+              MaterialPageRoute(
+                  builder: (context) => HomeScreen()), // Adjust as needed
             );
           }
         },

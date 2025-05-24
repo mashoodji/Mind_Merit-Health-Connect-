@@ -29,7 +29,8 @@ void main() async {
   final sharedData = SharedData();
   await sharedData.loadData(); // Load persisted data
 
-  final bool hasCompletedOnboarding = prefs.getBool('hasCompletedOnboarding') ?? false;
+  final bool hasCompletedOnboarding =
+      prefs.getBool('hasCompletedOnboarding') ?? false;
   User? user = FirebaseAuth.instance.currentUser;
 
   runApp(
@@ -55,6 +56,15 @@ class StudentPredictionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String initialRoute;
+    if (!hasCompletedOnboarding) {
+      initialRoute = '/onboarding';
+    } else if (isUserLoggedIn) {
+      initialRoute = '/home';
+    } else {
+      initialRoute = '/login';
+    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Student Prediction App',
@@ -62,9 +72,10 @@ class StudentPredictionApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/splash', // Start with splash screen
+      initialRoute: initialRoute, // Use dynamic initial route
       routes: {
-        '/splash': (context) => SplashScreen(hasCompletedOnboarding: hasCompletedOnboarding),
+        '/splash': (context) =>
+            SplashScreen(hasCompletedOnboarding: hasCompletedOnboarding),
         '/onboarding': (context) => OnboardingScreen(),
         '/login': (context) => LoginPage(),
         '/signup': (context) => SignUpPage(),
@@ -74,7 +85,10 @@ class StudentPredictionApp extends StatelessWidget {
         '/settings': (context) => SettingsScreen(),
         '/health': (context) => HealthApp(),
         '/study': (context) => StudyTimerPage(),
-        // '/stress': (context) => StressPrediction(),
+        '/stress': (context) => StressPrediction(
+              sleepHours: 0,
+              activityMinutes: 0,
+            ),
       },
     );
   }

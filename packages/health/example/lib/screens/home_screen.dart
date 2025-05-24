@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../health.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/drawer_widget.dart';
-import 'health_connect.dart';
 import 'stress_screen.dart';
 import 'gpa_screen.dart';
 
@@ -79,8 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Cancel',
-                      style: TextStyle(color: Colors.grey)),
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -93,8 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _saveSocialHours(tempHours);
                     Navigator.pop(context);
                   },
-                  child: Text('Save',
-                      style: TextStyle(color: Colors.white)),
+                  child: Text('Save', style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -117,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F8FA),
-      drawer:  DrawerWidget(),
+      drawer: DrawerWidget(),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTap,
@@ -142,14 +139,16 @@ class _HomeScreenState extends State<HomeScreen> {
             elevation: 1,
             shadowColor: Colors.black12,
             leading: IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Colors.deepPurple, size: 26),
+              icon: const Icon(Icons.menu_rounded,
+                  color: Colors.deepPurple, size: 26),
               onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             ),
             title: RichText(
               text: const TextSpan(
                 children: [
                   WidgetSpan(
-                    child: Icon(Icons.school_rounded, color: Colors.deepPurple, size: 33),
+                    child: Icon(Icons.school_rounded,
+                        color: Colors.deepPurple, size: 33),
                     alignment: PlaceholderAlignment.middle,
                   ),
                   TextSpan(
@@ -343,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          Image.asset('assets/images/3.png', height: 200),
+          Image.asset('assets/images/3.png', height: 130),
         ],
       ),
     );
@@ -367,16 +366,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: 18,
                       color: Colors.deepPurple[800],
                     )),
-                Icon(Icons.people_alt,
-                    color: Colors.deepPurple[300], size: 24),
+                Icon(Icons.people_alt, color: Colors.deepPurple[300], size: 24),
               ],
             ),
             const SizedBox(height: 12),
             LinearProgressIndicator(
               value: _socialHours / 12,
               backgroundColor: Colors.deepPurple[100],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.deepPurple[400]!),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(Colors.deepPurple[400]!),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -395,8 +393,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                   onPressed: _showSocialHoursDialog,
                   child: const Text('Update',
@@ -416,7 +414,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPredictionCards() {
     return Row(
       children: [
-        Expanded(child: _buildPredictionCard(
+        Expanded(
+            child: _buildPredictionCard(
           title: 'Stress\nPrediction',
           icon: Icons.self_improvement,
           color: Colors.redAccent,
@@ -436,7 +435,8 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         )),
         const SizedBox(width: 16),
-        Expanded(child: _buildPredictionCard(
+        Expanded(
+            child: _buildPredictionCard(
           title: 'GPA\nPrediction',
           icon: Icons.bar_chart,
           color: Colors.green,
@@ -617,14 +617,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontSize: 10,
                           );
                           switch (value.toInt()) {
-                            case 0: return const Text('Sun', style: style);
-                            case 1: return const Text('Mon', style: style);
-                            case 2: return const Text('Tue', style: style);
-                            case 3: return const Text('Wed', style: style);
-                            case 4: return const Text('Thu', style: style);
-                            case 5: return const Text('Fri', style: style);
-                            case 6: return const Text('Sat', style: style);
-                            default: return const Text('');
+                            case 0:
+                              return const Text('Sun', style: style);
+                            case 1:
+                              return const Text('Mon', style: style);
+                            case 2:
+                              return const Text('Tue', style: style);
+                            case 3:
+                              return const Text('Wed', style: style);
+                            case 4:
+                              return const Text('Thu', style: style);
+                            case 5:
+                              return const Text('Fri', style: style);
+                            case 6:
+                              return const Text('Sat', style: style);
+                            default:
+                              return const Text('');
                           }
                         },
                       ),
@@ -646,10 +654,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     ),
-                    rightTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   borderData: FlBorderData(
                     show: true,

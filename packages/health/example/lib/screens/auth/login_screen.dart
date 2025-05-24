@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:health_example/screens/auth/sign_up.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -116,11 +118,11 @@ class _LoginPageState extends State<LoginPage> {
       }
       _showSnackBar(errorMessage, Colors.redAccent);
     } catch (e) {
-      _showSnackBar("An unexpected error occurred: ${e.toString()}", Colors.red);
+      _showSnackBar(
+          "An unexpected error occurred: ${e.toString()}", Colors.red);
     }
     setState(() => _isLoading = false);
   }
-
 
   // Google Sign-In
   Future<void> _signInWithGoogle() async {
@@ -128,7 +130,8 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -147,20 +150,23 @@ class _LoginPageState extends State<LoginPage> {
   // Password Reset Function
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
-      _showSnackBar("Please enter your email to reset password!", Colors.redAccent);
+      _showSnackBar(
+          "Please enter your email to reset password!", Colors.redAccent);
       return;
     }
     try {
       await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
       _showSnackBar("Password Reset Email Sent!", Colors.green);
     } catch (e) {
-      _showSnackBar("Failed to send reset email: ${e.toString()}", Colors.redAccent);
+      _showSnackBar(
+          "Failed to send reset email: ${e.toString()}", Colors.redAccent);
     }
   }
 
   // Navigate to SignUp Page
   void _navigateToSignUp() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage()));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SignUpPage()));
   }
 
   @override
@@ -184,10 +190,14 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 10),
                 Text(
                   "Welcome Back!",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
                 ),
                 SizedBox(height: 5),
-                Text("Sign in to continue", style: TextStyle(fontSize: 18, color: Colors.grey)),
+                Text("Sign in to continue",
+                    style: TextStyle(fontSize: 18, color: Colors.grey)),
                 SizedBox(height: 25),
 
                 // Email Field
@@ -198,9 +208,12 @@ class _LoginPageState extends State<LoginPage> {
                     prefixIcon: Icon(Icons.email, color: Colors.grey),
                     filled: true,
                     fillColor: Colors.grey.shade200,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                   ),
-                  validator: (value) => value!.isEmpty ? "Please enter your email" : null,
+                  validator: (value) =>
+                      value!.isEmpty ? "Please enter your email" : null,
                 ),
                 SizedBox(height: 15),
 
@@ -216,19 +229,24 @@ class _LoginPageState extends State<LoginPage> {
                         _obscureText ? Icons.visibility_off : Icons.visibility,
                         color: _obscureText ? Colors.grey : Colors.blueAccent,
                       ),
-                      onPressed: () => setState(() => _obscureText = !_obscureText),
+                      onPressed: () =>
+                          setState(() => _obscureText = !_obscureText),
                     ),
                     filled: true,
                     fillColor: Colors.grey.shade200,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                   ),
-                  validator: (value) => value!.isEmpty ? "Please enter password" : null,
+                  validator: (value) =>
+                      value!.isEmpty ? "Please enter password" : null,
                 ),
                 SizedBox(height: 10),
 
                 // Remember Me & Forgot Password
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start, // Align items to the left
+                  mainAxisAlignment:
+                      MainAxisAlignment.start, // Align items to the left
                   children: [
                     // Row(
                     //   // children: [
@@ -242,11 +260,11 @@ class _LoginPageState extends State<LoginPage> {
                     Spacer(), // Pushes the Forgot Password button to the left
                     TextButton(
                       onPressed: _resetPassword,
-                      child: Text("Forgot Password?", style: TextStyle(color: Colors.blueAccent)),
+                      child: Text("Forgot Password?",
+                          style: TextStyle(color: Colors.blueAccent)),
                     ),
                   ],
                 ),
-
 
                 SizedBox(height: 20),
 
@@ -255,8 +273,16 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _login,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent, padding: EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    child: _isLoading ? CircularProgressIndicator(color: Colors.white) : Text("Sign in", style: TextStyle(fontSize: 18, color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text("Sign in",
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.white)),
                   ),
                 ),
                 SizedBox(height: 15),
@@ -266,8 +292,8 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: _signInWithGoogle,
-                    icon: Image.asset(
-                        'assets/images/google_icon.png', height: 24),
+                    icon: Image.asset('assets/images/google_icon.png',
+                        height: 24),
                     label: Text("Sign Up with Google",
                         style: TextStyle(fontSize: 16, color: Colors.black)),
                     style: OutlinedButton.styleFrom(
@@ -288,8 +314,10 @@ class _LoginPageState extends State<LoginPage> {
                     Text("Don't have an account?"),
                     TextButton(
                       onPressed: _navigateToSignUp,
-                      child: Text("Sign Up", style: TextStyle(
-                          color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                      child: Text("Sign Up",
+                          style: TextStyle(
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
