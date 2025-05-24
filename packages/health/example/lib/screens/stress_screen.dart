@@ -343,24 +343,37 @@ class _StressScreenState extends State<StressScreen> {
                     child: Text('Study Timer'),
                   ),
 
+                  // Replace the Get Health Data button with this:
                   ElevatedButton.icon(
                     onPressed: () async {
-                      final healthData = await Navigator.push<Map<String, double>>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HealthApp(),
-                        ),
-                      );
+                      try {
+                        // Fetch data directly without opening Health Screen
+                        final healthData = HealthDataProvider.getHealthData();
 
-                      if (healthData != null) {
-                        setState(() {
-                          sleepController.text = healthData['sleepHours']?.toStringAsFixed(1) ?? sleepController.text;
-                          physicalController.text = healthData['activityMinutes']?.toStringAsFixed(0) ?? physicalController.text;
-                        });
+                        if (healthData != null) {
+                          setState(() {
+                            sleepController.text = healthData['sleepHours']?.toStringAsFixed(1) ?? sleepController.text;
+                            physicalController.text = healthData['activityMinutes']?.toStringAsFixed(0) ?? physicalController.text;
+                          });
 
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Health data loaded successfully!'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Health data not available. Please check health tracking.'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Health data loaded successfully!'),
+                            content: Text('Error fetching health data: ${e.toString()}'),
                             duration: Duration(seconds: 2),
                           ),
                         );

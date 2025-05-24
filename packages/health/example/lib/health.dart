@@ -12,6 +12,24 @@ import 'package:health_example/util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:carp_serializable/carp_serializable.dart';
 
+
+class HealthDataProvider {
+  static HealthAppState? _instance;
+
+  static void setInstance(HealthAppState instance) {
+    _instance = instance;
+  }
+
+  static Map<String, double>? getHealthData() {
+    if (_instance == null) return null;
+    return {
+      'sleepHours': _instance!._sleepHours,
+      'activityMinutes': _instance!._activityMinutes,
+    };
+  }
+}
+
+
 // Global Health instance
 final health = Health();
 
@@ -92,6 +110,7 @@ class HealthAppState extends State<HealthApp> {
     super.initState();
     _initHealth();
     refreshData();
+    HealthDataProvider.setInstance(this); // Register the instance
   }
 
 
