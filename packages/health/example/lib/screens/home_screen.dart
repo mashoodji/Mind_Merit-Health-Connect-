@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Analyze your wellness and academic scores',
+                  'Analyze your wellness and academic scores.',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
