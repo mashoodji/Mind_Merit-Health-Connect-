@@ -62,7 +62,7 @@ class StudentPredictionApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/splash', // Start with splash screen
+      initialRoute: '/home', // Start with splash screen
       routes: {
         '/splash': (context) => SplashScreen(hasCompletedOnboarding: hasCompletedOnboarding),
         '/onboarding': (context) => OnboardingScreen(),

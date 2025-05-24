@@ -52,6 +52,15 @@ class HealthAppState extends State<HealthApp> {
   double _activityMinutes = 0.0;
   List<RecordingMethod> recordingMethodsToFilter = [];
 
+  Map<String, double> get healthData {
+    return {
+      'sleepHours': _sleepHours,
+      'activityMinutes': _activityMinutes,
+    };
+  }
+
+
+
   // Define colors
   final Color primaryColor = const Color(0xFF4285F4);
   final Color secondaryColor = const Color(0xFF34A853);
@@ -82,6 +91,7 @@ class HealthAppState extends State<HealthApp> {
   void initState() {
     super.initState();
     _initHealth();
+    refreshData();
   }
 
 
@@ -536,46 +546,32 @@ class HealthAppState extends State<HealthApp> {
                     revokeAccess,
                     icon: Icons.lock,
                   ),
-                   ElevatedButton(
-
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => StudyTimerPage(),
-
-                        ),
-                      );
-                    },
-                      style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-
-                      ),
-
-                      ),
-                    child: Text('Get_Study'),
-                  ),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => StressScreen(
-                            averageStudyHours: null,
-                            sleepHours: 0,
-                            activityMinutes: 0,
-                            socialHours: 0,  // Add default value
-                          ),
+                          builder: (context) => StudyTimerPage(),
                         ),
                       );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text('Get_Study'),
+                  ),
+                  // Modified Stress Prediction button
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, healthData); // Return current health data
+                    },
                     child: Text('Stress Prediction'),
                   ),
-
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(

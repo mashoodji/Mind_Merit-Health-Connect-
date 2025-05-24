@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../health.dart';
 import '../services/api_service.dart';
 import '../utils/colors.dart';
 import 'feature_screen/study_timer.dart';
@@ -341,6 +342,40 @@ class _StressScreenState extends State<StressScreen> {
                     ),
                     child: Text('Study Timer'),
                   ),
+
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final healthData = await Navigator.push<Map<String, double>>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HealthApp(),
+                        ),
+                      );
+
+                      if (healthData != null) {
+                        setState(() {
+                          sleepController.text = healthData['sleepHours']?.toStringAsFixed(1) ?? sleepController.text;
+                          physicalController.text = healthData['activityMinutes']?.toStringAsFixed(0) ?? physicalController.text;
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Health data loaded successfully!'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    icon: Icon(Icons.download_for_offline),
+                    label: Text("Get Health Data"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor2,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+
                   OutlinedButton.icon(
                     onPressed: clearData,
                     icon: Icon(Icons.clear),
