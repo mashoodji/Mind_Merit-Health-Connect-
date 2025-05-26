@@ -4,6 +4,7 @@ import 'package:health_example/screens/feature_screen/study_timer.dart';
 import 'package:health_example/screens/gpa_screen.dart';
 import 'package:health_example/screens/home_screen.dart';
 import 'package:health_example/screens/stress_screen.dart';
+import 'package:health_example/utils/data_gpa_fetcher.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -259,6 +260,10 @@ class HealthAppState extends State<HealthApp> {
     });
   }
 
+  Future<void> _cacheHealthData() async {
+    await GPADataFetcher.cacheHealthData(_sleepHours, _activityMinutes);
+  }
+
   Future<void> fetchStepData() async {
     int? steps;
 
@@ -353,6 +358,9 @@ class HealthAppState extends State<HealthApp> {
         _state = averageSleep > 0 ? AppState.SLEEP_READY : AppState.NO_DATA;
       });
 
+      // Cache the data after fetching
+      await _cacheHealthData();
+
     } catch (error) {
       debugPrint('Error fetching sleep data: $error');
       setState(() => _state = AppState.NO_DATA);
@@ -407,9 +415,13 @@ class HealthAppState extends State<HealthApp> {
         }
 
         setState(() {
-          _activityMinutes = activityMinutes;
+          _activityMinutes = activityMinutes / 60.0; // Convert minutes to hours
           _state = activityMinutes > 0 ? AppState.ACTIVITY_READY : AppState.NO_DATA;
         });
+
+
+        // Cache the data after fetching
+        await _cacheHealthData();
 
       } catch (error) {
         debugPrint("Activity data error: $error");
@@ -420,6 +432,7 @@ class HealthAppState extends State<HealthApp> {
       setState(() => _state = AppState.DATA_NOT_FETCHED);
     }
   }
+
 
   Future<void> revokeAccess() async {
     setState(() => _state = AppState.PERMISSIONS_REVOKING);
@@ -600,6 +613,7 @@ class HealthAppState extends State<HealthApp> {
                             averageStudyHours: null,
                             sleepHours: _sleepHours,
                             activityMinutes: _activityMinutes,
+                            socialHours: 0,
                           ),
                         ),
                       );

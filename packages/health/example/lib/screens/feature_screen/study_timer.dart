@@ -272,6 +272,7 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                       averageStudyHours: averageStudyHours,
                       sleepHours: 0,
                       activityMinutes: 0,
+                      socialHours: 0,
                     ),
                   ),
                 );

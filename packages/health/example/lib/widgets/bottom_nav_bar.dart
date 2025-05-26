@@ -58,6 +58,7 @@ class BottomNavBar extends StatelessWidget {
                         averageStudyHours: null,
                         sleepHours: 0, // Default value
                         activityMinutes: 0, // Default value
+                        socialHours: 0,
                       ),
                     ),
                   );

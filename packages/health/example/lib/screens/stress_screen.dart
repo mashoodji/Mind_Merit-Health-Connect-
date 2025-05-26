@@ -266,13 +266,22 @@ class _StressScreenState extends State<StressScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryColor2,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [BoxShadow(color: Colors.blueAccent.withOpacity(0.3), blurRadius: 10, spreadRadius: 2)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blueAccent.withOpacity(0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ],
                 ),
                 child: Column(
                   children: [
                     Icon(Icons.health_and_safety, color: Colors.white, size: 40),
                     SizedBox(height: 10),
-                    Text("Track Your Stress Levels", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(
+                      "Track Your Stress Levels",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ],
                 ),
               ),
@@ -304,6 +313,10 @@ class _StressScreenState extends State<StressScreen> {
                           foregroundColor: Colors.white,
                         ),
                       ),
+                      if (_fetchedGpaMessage != null) ...[
+                        SizedBox(height: 10),
+                        Text(_fetchedGpaMessage!, style: TextStyle(color: Colors.grey[700])),
+                      ]
                     ],
                   ),
                 ),
@@ -325,77 +338,29 @@ class _StressScreenState extends State<StressScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => StudyTimerPage(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor2,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text('Study Timer'),
-                  ),
-
-                  // Replace the Get Health Data button with this:
                   ElevatedButton.icon(
-                    onPressed: () async {
-                      try {
-                        // Fetch data directly without opening Health Screen
-                        final healthData = HealthDataProvider.getHealthData();
-
-                        if (healthData != null) {
-                          setState(() {
-                            sleepController.text = healthData['sleepHours']?.toStringAsFixed(1) ?? sleepController.text;
-                            physicalController.text = healthData['activityMinutes']?.toStringAsFixed(0) ?? physicalController.text;
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Health data loaded successfully!'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Health data not available. Please check health tracking.'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error fetching health data: ${e.toString()}'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    },
-                    icon: Icon(Icons.download_for_offline),
-                    label: Text("Get Health Data"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor2,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-
-                  OutlinedButton.icon(
                     onPressed: clearData,
                     icon: Icon(Icons.clear),
                     label: Text("Clear"),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.errorColor2,
-                      side: BorderSide(color: AppColors.errorColor2),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[400],
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => StudyTimerPage()),
+                      );
+                    },
+                    icon: Icon(Icons.timer),
+                    label: Text("Study Timer"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -403,54 +368,14 @@ class _StressScreenState extends State<StressScreen> {
                 ],
               ),
               SizedBox(height: 20),
-              if (_fetchedGpaMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 15.0),
-                  child: Text(
-                    _fetchedGpaMessage!,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _fetchedGpaMessage!.startsWith("Error") ||
-                          _fetchedGpaMessage!.startsWith("No CGPA") ||
-                          _fetchedGpaMessage!.startsWith("Not a university") ||
-                          _fetchedGpaMessage!.startsWith("User not logged in")
-                          ? AppColors.errorColor2
-                          : AppColors.primaryColor2,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+              if (stressResult != null) ...[
+                Text(
+                  "Stress Prediction: $stressResult",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.redAccent),
                 ),
-              if (stressResult != null)
-                Container(
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 8, spreadRadius: 1)],
-                  ),
-                  child: Column(
-                    children: [
-                      Text("Predicted Stress Level", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textColor2)),
-                      SizedBox(height: 8),
-                      Text(
-                        stressResult!,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: stressResult!.startsWith("Error") ? AppColors.errorColor2 : AppColors.primaryColor2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (featureImportances != null) ...[
-                        SizedBox(height: 20),
-                        Text("Feature Impact on Stress", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textColor2)),
-                        buildBarChart(featureImportances!),
-                      ],
-                    ],
-                  ),
-                ),
-              SizedBox(height: 20),
+                SizedBox(height: 20),
+              ],
+              if (featureImportances != null) buildBarChart(featureImportances!),
             ],
           ),
         ),

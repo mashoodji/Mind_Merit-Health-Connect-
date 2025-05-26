@@ -445,10 +445,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const GPAScreen(
+                builder: (context) => GPAScreen(
                   averageStudyHours: null,
                   sleepHours: 0,
                   activityMinutes: 0,
+                  socialHours: _socialHours,
                 ),
               ),
             );
