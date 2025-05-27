@@ -410,7 +410,7 @@ class HealthAppState extends State<HealthApp> {
         if (activityMinutes == 0) {
           int? steps = await health.getTotalStepsInInterval(midnight, now);
           if (steps != null && steps > 0) {
-            activityMinutes = steps / 100.0; // 100 steps ≈ 1 minute
+            activityMinutes = steps / 10.0; // 100 steps ≈ 1 minute
           }
         }
 
@@ -931,7 +931,7 @@ class HealthAppState extends State<HealthApp> {
       children: [
         const Icon(Icons.directions_run, size: 48, color: Colors.green),
         const SizedBox(height: 16),
-        Text('Weekly_Activity : ${_activityMinutes.toStringAsFixed(0)} minutes',
+        Text('Weekly_Activity : ${_activityMinutes.toStringAsFixed(0)} Hour',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       ],
     ),

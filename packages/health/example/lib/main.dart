@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health_example/screens/feature_screen/study_timer.dart';
+import 'package:health_example/screens/stress_screen.dart';
 import 'package:health_example/services/shared_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +15,6 @@ import 'package:health_example/screens/profile_screen.dart';
 import 'package:health_example/screens/notifications_screen.dart';
 import 'package:health_example/screens/settings_screen.dart';
 import 'package:health_example/screens/auth/login_screen.dart';
-import 'package:health_example/screens/stress_prediction.dart';
 
 import 'health.dart';
 
@@ -85,9 +85,9 @@ class StudentPredictionApp extends StatelessWidget {
         '/settings': (context) => SettingsScreen(),
         '/health': (context) => HealthApp(),
         '/study': (context) => StudyTimerPage(),
-        '/stress': (context) => StressPrediction(
+        '/stress': (context) => StressScreen(
               sleepHours: 0,
-              activityMinutes: 0,
+              activityMinutes: 0, socialHours: 0,
             ),
       },
     );

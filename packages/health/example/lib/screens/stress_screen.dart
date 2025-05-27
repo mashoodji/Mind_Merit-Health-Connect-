@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../health.dart';
 import '../services/api_service.dart';
-import '../utils/colors.dart';
+import '../utils/colors1.dart';
+import '../utils/data_stress_fetcher.dart';
 import 'feature_screen/study_timer.dart';
 
 class StressScreen extends StatefulWidget {
@@ -109,6 +110,70 @@ class _StressScreenState extends State<StressScreen> {
     }
   }
 
+  Future<void> _autoFillData() async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.textLight),
+              ),
+              SizedBox(width: 16),
+              Text('Fetching data...', style: TextStyle(color: AppColors.textLight)),
+            ],
+          ),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      Map<String, dynamic> allData = await StressDataFetcher.fetchAllData();
+
+      setState(() {
+        studyController.text = (allData['studyHours'] as double).toStringAsFixed(1);
+        sleepController.text = (allData['sleepHours'] as double).toStringAsFixed(1);
+        physicalController.text = (allData['activityMinutes'] as double).toStringAsFixed(0);
+
+        if (extracurricularController.text.isEmpty) {
+          extracurricularController.text = '1.0';
+        }
+        if (socialController.text.isEmpty) {
+          socialController.text = '2.0';
+        }
+
+        if (allData['gpa'] != null) {
+          gpaController.text = (allData['gpa'] as double).toStringAsFixed(2);
+          _fetchedGpaMessage = allData['gpaMessage'];
+        } else {
+          _fetchedGpaMessage = allData['gpaMessage'];
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Data filled successfully!', style: TextStyle(color: AppColors.textLight)),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to fetch data: $e', style: TextStyle(color: AppColors.textLight)),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
+
   void predictStress() async {
     if (gpaController.text.isEmpty) {
       setState(() {
@@ -175,25 +240,41 @@ class _StressScreenState extends State<StressScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.primaryColor2),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        labelStyle: TextStyle(color: AppColors.textSecondary),
+        prefixIcon: Icon(icon, color: AppColors.primary),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.cardBackground,
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       keyboardType: TextInputType.numberWithOptions(decimal: true),
+      style: TextStyle(color: AppColors.textPrimary),
     );
   }
 
   Widget buildBarChart(Map<String, double> data) {
-    final bars = data.entries
-        .map((entry) => BarChartRodData(
+    final bars = data.entries.map((entry) => BarChartRodData(
       toY: entry.value,
-      color: AppColors.primaryColor2,
+      color: AppColors.primary,
       width: 20,
       borderRadius: BorderRadius.circular(4),
-    ))
-        .toList();
+      backDrawRodData: BackgroundBarChartRodData(
+        show: true,
+        toY: 1.0,
+        color: AppColors.divider,
+      ),
+    )).toList();
 
     final labels = data.keys.toList();
 
@@ -203,6 +284,24 @@ class _StressScreenState extends State<StressScreen> {
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
+          barTouchData: BarTouchData(
+            enabled: true,
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                return BarTooltipItem(
+                  '${labels[groupIndex]}\n${rod.toY.toStringAsFixed(2)}',
+                  TextStyle(
+                    color: AppColors.textLight,
+                    fontSize: 12,
+                  ),
+                );
+              },
+              tooltipMargin: 8,
+              tooltipPadding: EdgeInsets.all(8),
+              tooltipRoundedRadius: 8,
+              getTooltipColor: (group) => AppColors.primary.withOpacity(0.8),
+            ),
+          ),
           barGroups: List.generate(bars.length, (index) {
             return BarChartGroupData(
               x: index,
@@ -211,7 +310,19 @@ class _StressScreenState extends State<StressScreen> {
           }),
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 30),
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toStringAsFixed(1),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 10,
+                    ),
+                  );
+                },
+              ),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
@@ -224,7 +335,10 @@ class _StressScreenState extends State<StressScreen> {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         labels[idx],
-                        style: TextStyle(fontSize: 10),
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 10,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     );
@@ -233,14 +347,17 @@ class _StressScreenState extends State<StressScreen> {
                 },
               ),
             ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: AppColors.divider,
+              strokeWidth: 0.5,
             ),
           ),
-          gridData: FlGridData(show: true),
           borderData: FlBorderData(show: false),
         ),
       ),
@@ -250,105 +367,184 @@ class _StressScreenState extends State<StressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor2,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text("Stress Prediction"),
-        backgroundColor: AppColors.primaryColor2,
+        title: Text("Stress Prediction", style: TextStyle(
+          color: AppColors.textLight,
+          fontWeight: FontWeight.bold,
+        )),
+        backgroundColor: AppColors.primary,
         elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.textLight),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(20.0),
           child: Column(
             children: [
+              // Hero Card
               Container(
-                padding: EdgeInsets.all(15),
+                padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor2,
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blueAccent.withOpacity(0.3),
+                      color: AppColors.primary.withOpacity(0.3),
                       blurRadius: 10,
                       spreadRadius: 2,
+                      offset: Offset(0, 4),
                     )
                   ],
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    Icon(Icons.health_and_safety, color: Colors.white, size: 40),
-                    SizedBox(height: 10),
-                    Text(
-                      "Track Your Stress Levels",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    Icon(Icons.health_and_safety,
+                        color: AppColors.textLight, size: 40),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Stress Level Prediction",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Understand how your habits affect your stress levels",
+                            style: TextStyle(
+                              color: AppColors.textLight.withOpacity(0.9),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 24),
+
+              // Input Card
               Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                shadowColor: AppColors.shadow,
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(20.0),
                   child: Column(
                     children: [
                       buildTextField("Study Hours", studyController, Icons.book),
-                      SizedBox(height: 12),
+                      SizedBox(height: 16),
                       buildTextField("Extracurricular Hours", extracurricularController, Icons.sports),
-                      SizedBox(height: 12),
+                      SizedBox(height: 16),
                       buildTextField("Sleep Hours", sleepController, Icons.nightlight_round),
-                      SizedBox(height: 12),
+                      SizedBox(height: 16),
                       buildTextField("Social Hours", socialController, Icons.people),
-                      SizedBox(height: 12),
+                      SizedBox(height: 16),
                       buildTextField("Physical Activity Hours", physicalController, Icons.fitness_center),
-                      SizedBox(height: 12),
+                      SizedBox(height: 16),
                       buildTextField("GPA", gpaController, Icons.grade),
-                      SizedBox(height: 12),
+                      SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _fillGpaFromFirestore,
-                        child: Text("Fetch GPA from Database"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor2,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.textLight,
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.cloud_download, size: 20),
+                            SizedBox(width: 8),
+                            Text("Fetch GPA from Database"),
+                          ],
                         ),
                       ),
                       if (_fetchedGpaMessage != null) ...[
-                        SizedBox(height: 10),
-                        Text(_fetchedGpaMessage!, style: TextStyle(color: Colors.grey[700])),
+                        SizedBox(height: 12),
+                        Text(
+                          _fetchedGpaMessage!,
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ]
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 24),
+
+              // Action Buttons
               Wrap(
-                alignment: WrapAlignment.spaceEvenly,
-                spacing: 10,
-                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
                 children: [
+                  // Predict Button
                   ElevatedButton.icon(
                     onPressed: predictStress,
-                    icon: Icon(Icons.analytics),
+                    icon: Icon(Icons.analytics, size: 20),
                     label: Text("Predict"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor2,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textLight,
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
                     ),
                   ),
+
+                  // Auto-Fill Button
+                  ElevatedButton.icon(
+                    onPressed: _autoFillData,
+                    icon: Icon(Icons.auto_fix_high, size: 20),
+                    label: Text("Auto-Fill"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.success,
+                      foregroundColor: AppColors.textLight,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+
+                  // Clear Button
                   ElevatedButton.icon(
                     onPressed: clearData,
-                    icon: Icon(Icons.clear),
+                    icon: Icon(Icons.clear, size: 20),
                     label: Text("Clear"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[400],
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppColors.divider,
+                      foregroundColor: AppColors.textPrimary,
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
                     ),
                   ),
+
+                  // Study Timer Button
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(
@@ -356,30 +552,130 @@ class _StressScreenState extends State<StressScreen> {
                         MaterialPageRoute(builder: (context) => StudyTimerPage()),
                       );
                     },
-                    icon: Icon(Icons.timer),
+                    icon: Icon(Icons.timer, size: 20),
                     label: Text("Study Timer"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.accentPurple,
+                      foregroundColor: AppColors.textLight,
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 24),
+
+              // Results Section
               if (stressResult != null) ...[
-                Text(
-                  "Stress Prediction: $stressResult",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _getStressColor(stressResult!).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _getStressColor(stressResult!).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _getStressIcon(stressResult!),
+                            color: _getStressColor(stressResult!),
+                            size: 24,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "Stress Prediction:",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        stressResult!,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: _getStressColor(stressResult!),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 24),
               ],
-              if (featureImportances != null) buildBarChart(featureImportances!),
+
+              // Feature Importance Chart
+              if (featureImportances != null) ...[
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Feature Importance",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "How each factor contributes to your stress level",
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        buildBarChart(featureImportances!),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              SizedBox(height: 40),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Color _getStressColor(String stressLevel) {
+    if (stressLevel.toLowerCase().contains('low')) {
+      return AppColors.success;
+    } else if (stressLevel.toLowerCase().contains('medium')) {
+      return Colors.orange;
+    } else {
+      return AppColors.error;
+    }
+  }
+
+  IconData _getStressIcon(String stressLevel) {
+    if (stressLevel.toLowerCase().contains('low')) {
+      return Icons.sentiment_very_satisfied;
+    } else if (stressLevel.toLowerCase().contains('medium')) {
+      return Icons.sentiment_neutral;
+    } else {
+      return Icons.sentiment_very_dissatisfied;
+    }
   }
 }
