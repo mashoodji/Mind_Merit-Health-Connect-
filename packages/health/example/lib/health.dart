@@ -666,7 +666,7 @@ class HealthAppState extends State<HealthApp> {
               children: [
                 _buildMetricCard("Steps", _nofSteps.toString(), Icons.directions_walk),
                 _buildMetricCard("Sleep", "${_sleepHours.toStringAsFixed(1)}h", Icons.bedtime),
-                _buildMetricCard("Activity", "${_activityMinutes.toStringAsFixed(0)}m", Icons.directions_run),
+                _buildMetricCard("Activity", "${_activityMinutes.toStringAsFixed(0)}h", Icons.directions_run),
               ],
             ),
           ],
@@ -931,7 +931,7 @@ class HealthAppState extends State<HealthApp> {
       children: [
         const Icon(Icons.directions_run, size: 48, color: Colors.green),
         const SizedBox(height: 16),
-        Text('Weekly_Activity : ${_activityMinutes.toStringAsFixed(0)} Hour',
+        Text('Weekly_Activity : ${_activityMinutes.toStringAsFixed(0)} hour',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       ],
     ),
