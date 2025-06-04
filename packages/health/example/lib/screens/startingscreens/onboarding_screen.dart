@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/constants.dart';
-import '../services/onboarding_page.dart';
+import '../../utils/constants.dart';
+import '../../services/onboarding_page.dart';
 
 final List<OnboardingData> onboardingPages = [
   OnboardingData(

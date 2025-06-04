@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import '../widgets/bottom_nav_bar.dart';
-import '../screens/home_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/notifications_screen.dart';
+import '../../utils/colors.dart';
+import '../../widgets/bottom_nav_bar.dart';
+import '../home_screen.dart';
+import 'profile_screen.dart';
+import 'notifications_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

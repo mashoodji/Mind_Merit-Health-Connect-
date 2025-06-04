@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:health_example/screens/feature_screen/study_timer.dart';
-import 'package:health_example/screens/gpa_screen.dart';
+import 'package:health_example/screens/feature_screen/gpa_screen.dart';
 import 'package:health_example/screens/home_screen.dart';
-import 'package:health_example/screens/stress_screen.dart';
+import 'package:health_example/screens/feature_screen/stress_screen.dart';
 import 'package:health_example/utils/data_gpa_fetcher.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';

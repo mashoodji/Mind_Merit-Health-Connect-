@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../screens/stress_screen.dart';
-import '../screens/gpa_screen.dart';
+import '../screens/feature_screen/stress_screen.dart';
+import '../screens/feature_screen/gpa_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/notifications_screen.dart';
-import '../screens/settings_screen.dart';
+import '../screens/navbarscreens/profile_screen.dart';
+import '../screens/navbarscreens/notifications_screen.dart';
+import '../screens/navbarscreens/settings_screen.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;

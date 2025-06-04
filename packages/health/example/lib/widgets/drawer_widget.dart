@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:health_example/screens/home_screen.dart';
-import 'package:health_example/screens/stress_screen.dart';
+import 'package:health_example/screens/feature_screen/stress_screen.dart';
 
-import '../screens/gpa_screen.dart';
+import '../screens/feature_screen/gpa_screen.dart';
 
 class DrawerWidget extends StatelessWidget {
   const DrawerWidget({super.key});

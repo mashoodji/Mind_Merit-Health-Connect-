@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../health.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/drawer_widget.dart';
-import 'stress_screen.dart';
-import 'gpa_screen.dart';
+import 'feature_screen/stress_screen.dart';
+import 'feature_screen/gpa_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

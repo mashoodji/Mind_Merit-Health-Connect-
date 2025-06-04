@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../health.dart';
-import '../services/api_service.dart';
-import '../utils/colors1.dart';
-import '../utils/data_stress_fetcher.dart';
-import 'feature_screen/study_timer.dart';
+import '../../health.dart';
+import '../../services/api_service.dart';
+import '../../utils/colors1.dart';
+import '../../utils/data_stress_fetcher.dart';
+import 'study_timer.dart';
 
 class StressScreen extends StatefulWidget {
   final double? averageStudyHours;

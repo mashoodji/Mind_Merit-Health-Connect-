@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../services/api_service.dart';
-import '../utils/data_gpa_fetcher.dart';
-import 'feature_screen/study_timer.dart';
+import '../../services/api_service.dart';
+import '../../utils/data_gpa_fetcher.dart';
+import 'study_timer.dart';
 
 class GPAScreen extends StatefulWidget {
   final double sleepHours;

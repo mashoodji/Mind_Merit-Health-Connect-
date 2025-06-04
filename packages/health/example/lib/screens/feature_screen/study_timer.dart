@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-import '../gpa_screen.dart';
-import '../stress_screen.dart';
+import 'gpa_screen.dart';
+import 'stress_screen.dart';
 
 class StudyTimerPage extends StatefulWidget {
   const StudyTimerPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health_example/screens/feature_screen/study_timer.dart';
-import 'package:health_example/screens/stress_screen.dart';
+import 'package:health_example/screens/feature_screen/stress_screen.dart';
 import 'package:health_example/services/shared_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,12 +8,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:health_example/screens/auth/sign_up.dart';
-import 'package:health_example/screens/onboarding_screen.dart';
-import 'package:health_example/screens/splash_screen.dart';
+import 'package:health_example/screens/startingscreens/onboarding_screen.dart';
+import 'package:health_example/screens/startingscreens/splash_screen.dart';
 import 'package:health_example/screens/home_screen.dart';
-import 'package:health_example/screens/profile_screen.dart';
-import 'package:health_example/screens/notifications_screen.dart';
-import 'package:health_example/screens/settings_screen.dart';
+import 'package:health_example/screens/navbarscreens/profile_screen.dart';
+import 'package:health_example/screens/navbarscreens/notifications_screen.dart';
+import 'package:health_example/screens/navbarscreens/settings_screen.dart';
 import 'package:health_example/screens/auth/login_screen.dart';
 
 import 'health.dart';
