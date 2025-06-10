@@ -24,7 +24,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           nextScreen = HomeScreen();
           break;
         case 1:
-          nextScreen = ProfileScreen();
+        case 1:
+          nextScreen = ProfileScreen(
+            username: 'Guest User',
+            email: 'guest@example.com',
+            photoUrl: 'assets/images/profile.png',
+          );
+          break;
+
           break;
         case 2:
           nextScreen = NotificationsScreen();

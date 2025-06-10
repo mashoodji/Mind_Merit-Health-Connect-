@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:health_example/screens/auth/sign_up.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:health_example/screens/auth/sign_up.dart';
+import '../navbarscreens/profile_screen.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final _auth      = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+  final _google    = GoogleSignIn();
+
+  final _emailController    = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey            = GlobalKey<FormState>();
 
   bool _obscureText = true;
-  bool _isLoading = false;
-  bool _rememberMe = false; // Remember Me toggle
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading   = false;
+  bool _rememberMe  = false;
 
   @override
   void initState() {
@@ -29,144 +33,143 @@ class _LoginPageState extends State<LoginPage> {
     _loadSavedCredentials();
   }
 
-  // Load saved credentials
   Future<void> _loadSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _emailController.text = prefs.getString('email') ?? '';
+      _emailController.text    = prefs.getString('email') ?? '';
       _passwordController.text = prefs.getString('password') ?? '';
-      _rememberMe = prefs.getBool('RrememberMe') ?? false;
+      _rememberMe              = prefs.getBool('remember_me') ?? false;
     });
   }
 
-  // Save credentials
   Future<void> _saveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     if (_rememberMe) {
       await prefs.setString('email', _emailController.text.trim());
       await prefs.setString('password', _passwordController.text.trim());
-      await prefs.setBool('rememberMe', true);
+      await prefs.setBool('remember_me', true);
     } else {
       await prefs.remove('email');
       await prefs.remove('password');
-      await prefs.setBool('rememberMe', false);
+      await prefs.setBool('remember_me', false);
     }
   }
 
-  // Show SnackBar
-  void _showSnackBar(String message, Color color) {
+  void _showSnackBar(String msg, Color bgColor) {
     final snackBar = SnackBar(
       content: Container(
-        padding: EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
+        child: Text(msg, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white)),
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  // Email & Password Login
-  Future<void> _login() async {
+  Future<void> _loginWithEmail() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      final cred = await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      if (userCredential.user != null) {
-        await _saveCredentials(); // Save credentials if Remember Me is checked
-        _showSnackBar("Welcome to App!", Colors.green);
+      final doc = await _firestore.collection("users").doc(cred.user!.uid).get();
+      final data = doc.data() ?? {};
 
-        Future.delayed(Duration(seconds: 1), () {
-          Navigator.pushReplacementNamed(context, '/home');
-        });
+      if (cred.user != null) {
+        if (_rememberMe) await _saveCredentials();
+
+        final username = data['username'] ?? cred.user!.displayName ?? '';
+        final email    = data['email'] ?? cred.user!.email ?? '';
+        final photoUrl = data['photo_url'] ?? cred.user!.photoURL ?? '';
+
+        _showSnackBar("Welcome back!", Colors.green);
+        await Future.delayed(Duration(seconds: 1));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProfileScreen(
+              username: username,
+              email: email,
+              photoUrl: photoUrl,
+            ),
+          ),
+        );
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch (e.code) {
-        case "invalid-email":
-          errorMessage = "Invalid email format.";
-          break;
-        case "user-disabled":
-          errorMessage = "This user has been disabled.";
-          break;
-        case "user-not-found":
-          errorMessage = "No user found with this email.";
-          break;
-        case "wrong-password":
-          errorMessage = "Incorrect password.";
-          break;
-        case "invalid-credential":
-          errorMessage = "Invalid credentials. Try again.";
-          break;
-        default:
-          errorMessage = "Login Failed: ${e.message}";
-      }
-      _showSnackBar(errorMessage, Colors.redAccent);
-    } catch (e) {
-      _showSnackBar(
-          "An unexpected error occurred: ${e.toString()}", Colors.red);
+      _showSnackBar("Error: ${e.message}", Colors.redAccent);
+    } finally {
+      setState(() => _isLoading = false);
     }
-    setState(() => _isLoading = false);
   }
 
-  // Google Sign-In
   Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final googleUser = await _google.signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+      final googleAuth = await googleUser.authentication;
+      final cred = await _auth.signInWithCredential(
+        GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        ),
       );
 
-      await _auth.signInWithCredential(credential);
+      final doc = await _firestore.collection("users").doc(cred.user!.uid).get();
+      final data = doc.data() ?? {};
+
+      if (_rememberMe) await _saveCredentials();
+
+      final username = data['username'] ?? cred.user!.displayName ?? '';
+      final email    = data['email'] ?? cred.user!.email ?? '';
+      final photoUrl = data['photo_url'] ?? cred.user!.photoURL ?? '';
+
       _showSnackBar("Google Sign-In Successful!", Colors.green);
-      Future.delayed(Duration(seconds: 1), () {
-        Navigator.pushReplacementNamed(context, '/home');
-      });
+      await Future.delayed(Duration(seconds: 1));
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProfileScreen(
+            username: username,
+            email: email,
+            photoUrl: photoUrl,
+          ),
+        ),
+      );
     } catch (e) {
-      _showSnackBar("Google Sign-In Failed: ${e.toString()}", Colors.redAccent);
+      _showSnackBar("Google Sign-In failed: ${e.toString()}", Colors.redAccent);
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  // Password Reset Function
   Future<void> _resetPassword() async {
     if (_emailController.text.isEmpty) {
-      _showSnackBar(
-          "Please enter your email to reset password!", Colors.redAccent);
+      _showSnackBar("Enter email to reset password!", Colors.redAccent);
       return;
     }
     try {
       await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
       _showSnackBar("Password Reset Email Sent!", Colors.green);
     } catch (e) {
-      _showSnackBar(
-          "Failed to send reset email: ${e.toString()}", Colors.redAccent);
+      _showSnackBar("Error: ${e.toString()}", Colors.redAccent);
     }
   }
 
-  // Navigate to SignUp Page
   void _navigateToSignUp() {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SignUpPage()));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SignUpPage()));
   }
 
   @override
@@ -178,149 +181,90 @@ class _LoginPageState extends State<LoginPage> {
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 30),
-                Center(
-                  child: Lottie.asset(
-                    'assets/animations/login.json',
-                    height: 350,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Welcome Back!",
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87),
-                ),
-                SizedBox(height: 5),
-                Text("Sign in to continue",
-                    style: TextStyle(fontSize: 18, color: Colors.grey)),
-                SizedBox(height: 25),
-
-                // Email Field
+                const SizedBox(height: 30),
+                Center(child: Lottie.asset('assets/animations/login.json', height: 350)),
+                const Text("Welcome Back!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                const Text("Sign in to continue", style: TextStyle(fontSize: 18, color: Colors.grey)),
+                const SizedBox(height: 25),
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: "Email",
-                    prefixIcon: Icon(Icons.email, color: Colors.grey),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
+                    prefixIcon: const Icon(Icons.email, color: Colors.grey),
+                    filled: true, fillColor: Colors.grey.shade200,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
-                  validator: (value) =>
-                      value!.isEmpty ? "Please enter your email" : null,
                 ),
-                SizedBox(height: 15),
-
-                // Password Field
+                const SizedBox(height: 15),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscureText,
                   decoration: InputDecoration(
                     hintText: "Password",
-                    prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                    prefixIcon: const Icon(Icons.lock, color: Colors.grey),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureText ? Icons.visibility_off : Icons.visibility,
-                        color: _obscureText ? Colors.grey : Colors.blueAccent,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscureText = !_obscureText),
+                      icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => _obscureText = !_obscureText),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
+                    filled: true, fillColor: Colors.grey.shade200,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
-                  validator: (value) =>
-                      value!.isEmpty ? "Please enter password" : null,
                 ),
-                SizedBox(height: 10),
-
-                // Remember Me & Forgot Password
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.start, // Align items to the left
                   children: [
-                    // Row(
-                    //   // children: [
-                    //   //   Checkbox(
-                    //   //     value: _rememberMe,
-                    //   //     onChanged: (value) => setState(() => _rememberMe = value!),
-                    //   //   ),
-                    //   //   Text("Remember Me"),
-                    //   // ],
-                    // ),
-                    Spacer(), // Pushes the Forgot Password button to the left
+                    Checkbox(
+                      value: _rememberMe,
+                      onChanged: (v) => setState(() => _rememberMe = v!),
+                    ),
+                    const Text("Remember Me"),
+                    const Spacer(),
                     TextButton(
                       onPressed: _resetPassword,
-                      child: Text("Forgot Password?",
-                          style: TextStyle(color: Colors.blueAccent)),
-                    ),
+                      child: const Text("Forgot Password?", style: TextStyle(color: Colors.blueAccent)),
+                    )
                   ],
                 ),
-
-                SizedBox(height: 20),
-
-                // Login Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _login,
+                    onPressed: _isLoading ? null : _loginWithEmail,
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12))),
+                      backgroundColor: Colors.blueAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                     child: _isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text("Sign in",
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white)),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Sign in", style: TextStyle(fontSize: 18, color: Colors.white)),
                   ),
                 ),
-                SizedBox(height: 15),
-
-                // Google Sign-In Button
+                const SizedBox(height: 15),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: _signInWithGoogle,
-                    icon: Image.asset('assets/images/google_icon.png',
-                        height: 24),
-                    label: Text("Sign Up with Google",
-                        style: TextStyle(fontSize: 16, color: Colors.black)),
+                    icon: Image.asset('assets/images/google_icon.png', height: 24),
+                    label: const Text("Sign in with Google", style: TextStyle(fontSize: 16)),
                     style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       side: BorderSide(color: Colors.grey.shade300),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
-
-                SizedBox(height: 15),
-                // Sign Up Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account?"),
+                    const Text("Don't have an account?"),
                     TextButton(
                       onPressed: _navigateToSignUp,
-                      child: Text("Sign Up",
-                          style: TextStyle(
-                              color: Colors.blueAccent,
-                              fontWeight: FontWeight.bold)),
-                    ),
+                      child: const Text("Sign Up", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                    )
                   ],
-                ),
+                )
               ],
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../services/api_service.dart';
+import '../../utils/colors1.dart';
 import '../../utils/data_gpa_fetcher.dart';
 import 'study_timer.dart';
 
@@ -45,7 +46,6 @@ class _GPAScreenState extends State<GPAScreen> {
     }
   }
 
-  // Method to fetch study hours from SharedPreferences (Study Timer data)
   Future<double> _getStudyHoursFromTimer() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -53,8 +53,8 @@ class _GPAScreenState extends State<GPAScreen> {
       if (data != null) {
         Map<String, int> dailyMinutes = Map<String, int>.from(jsonDecode(data));
 
-        // Get last 7 days average
-        final sortedKeys = dailyMinutes.keys.toList()..sort((a, b) => b.compareTo(a));
+        final sortedKeys = dailyMinutes.keys.toList()
+          ..sort((a, b) => b.compareTo(a));
         final recentKeys = sortedKeys.take(7).toList();
 
         if (recentKeys.isEmpty) return 0;
@@ -64,7 +64,7 @@ class _GPAScreenState extends State<GPAScreen> {
           totalMinutes += dailyMinutes[key]!;
         }
 
-        return totalMinutes / 60 / recentKeys.length; // Convert to hours per day
+        return totalMinutes / 60 / recentKeys.length;
       }
     } catch (e) {
       debugPrint('Error fetching study data: $e');
@@ -72,42 +72,27 @@ class _GPAScreenState extends State<GPAScreen> {
     return 0;
   }
 
-  // Method to fetch health data from HealthDataProvider
-  Map<String, double>? _getHealthData() {
-    try {
-      // Import the health screen file and access the global health data
-      // Since we can't directly import, we'll use a different approach
-      return null; // We'll handle this differently
-    } catch (e) {
-      debugPrint('Error fetching health data: $e');
-      return null;
-    }
-  }
-
-  // Updated auto-fill method that fetches from actual sources
   Future<void> _autoFillData() async {
     try {
-      // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
-            children: [
+            children: const [
               CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.textLight),
               ),
               SizedBox(width: 16),
               Text('Fetching data...'),
             ],
           ),
+          backgroundColor: AppColors.primary,
           duration: Duration(seconds: 2),
         ),
       );
 
-      // Fetch study hours from Study Timer
       double studyHours = await _getStudyHoursFromTimer();
-
-      // Fetch health data from DataFetcher
       Map<String, double> healthData = await GPADataFetcher.getHealthData();
+
       double sleepHours = healthData['sleepHours'] ?? 0.0;
       double activityMinutes = healthData['activityMinutes'] ?? 0.0;
 
@@ -115,34 +100,31 @@ class _GPAScreenState extends State<GPAScreen> {
         studyController.text = studyHours.toStringAsFixed(1);
         sleepController.text = sleepHours.toStringAsFixed(1);
         physicalController.text = activityMinutes.toStringAsFixed(0);
-        // Keep existing social hours or set default
+
         if (socialController.text.isEmpty) {
-          socialController.text = '2.0'; // Default social hours
+          socialController.text = '2.0';
         }
-        // Keep existing extracurricular or set default
         if (extracurricularController.text.isEmpty) {
-          extracurricularController.text = '1.0'; // Default extracurricular hours
+          extracurricularController.text = '1.0';
         }
       });
 
-      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Data filled successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
           action: SnackBarAction(
             label: 'OK',
-            textColor: Colors.white,
+            textColor: AppColors.textLight,
             onPressed: () {},
           ),
         ),
       );
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to fetch data: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -183,6 +165,7 @@ class _GPAScreenState extends State<GPAScreen> {
       String label, IconData icon, TextEditingController controller) {
     return Card(
       elevation: 3,
+      color: AppColors.cardBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -190,8 +173,9 @@ class _GPAScreenState extends State<GPAScreen> {
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            icon: Icon(icon, color: Colors.blueAccent),
+            icon: Icon(icon, color: AppColors.iconPrimary),
             labelText: label,
+            labelStyle: const TextStyle(color: AppColors.textSecondary),
             border: InputBorder.none,
           ),
         ),
@@ -202,45 +186,43 @@ class _GPAScreenState extends State<GPAScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("GPA Prediction"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textLight,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              buildInputField(
-                  "Study Hours", FontAwesomeIcons.book, studyController),
+              buildInputField("Study Hours", FontAwesomeIcons.book, studyController),
               const SizedBox(height: 10),
-              buildInputField("Extracurricular Hours",
-                  FontAwesomeIcons.basketballBall, extracurricularController),
+              buildInputField("Extracurricular Hours", FontAwesomeIcons.basketballBall,
+                  extracurricularController),
               const SizedBox(height: 10),
-              buildInputField(
-                  "Sleep Hours", FontAwesomeIcons.bed, sleepController),
+              buildInputField("Sleep Hours", FontAwesomeIcons.bed, sleepController),
               const SizedBox(height: 10),
-              buildInputField(
-                  "Social Hours", FontAwesomeIcons.users, socialController),
+              buildInputField("Social Hours", FontAwesomeIcons.users, socialController),
               const SizedBox(height: 10),
               buildInputField("Physical Activity Hours", FontAwesomeIcons.running,
                   physicalController),
               const SizedBox(height: 20),
 
-              // Auto-Fill Button (prominent placement)
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 child: ElevatedButton.icon(
                   onPressed: _autoFillData,
-                  icon: const Icon(Icons.auto_fix_high, color: Colors.white),
+                  icon: const Icon(Icons.auto_fix_high, color: AppColors.textLight),
                   label: const Text(
                     'Auto-Fill Data',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.success,
+                    foregroundColor: AppColors.textLight,
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -252,7 +234,6 @@ class _GPAScreenState extends State<GPAScreen> {
 
               const SizedBox(height: 10),
 
-              // Other action buttons
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -261,15 +242,15 @@ class _GPAScreenState extends State<GPAScreen> {
                   ElevatedButton(
                     onPressed: predictGPA,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.accentBlue,
+                      foregroundColor: AppColors.textLight,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 30),
                     ),
                     child: const Text("Predict GPA", style: TextStyle(fontSize: 16)),
                   ),
-
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -280,52 +261,40 @@ class _GPAScreenState extends State<GPAScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.warning,
+                      foregroundColor: AppColors.textLight,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 30),
                     ),
-                    child: const Text('Study Timer', style: TextStyle(fontSize: 16)),
+                    child: const Text("Study Timer", style: TextStyle(fontSize: 16)),
                   ),
-
-                  OutlinedButton(
+                  ElevatedButton(
                     onPressed: clearData,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                      side: const BorderSide(color: Colors.redAccent),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error,
+                      foregroundColor: AppColors.textLight,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 30),
                     ),
-                    child: const Text("Clear", style: TextStyle(fontSize: 16)),
+                    child: const Text("Clear Data", style: TextStyle(fontSize: 16)),
                   ),
                 ],
               ),
 
               const SizedBox(height: 20),
-
-              // Result display
-              gpaResult == null
-                  ? const Text("Enter values to predict GPA",
-                  style: TextStyle(fontSize: 16, color: Colors.grey))
-                  : Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                color: Colors.lightBlueAccent,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Predicted GPA: $gpaResult",
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                    textAlign: TextAlign.center,
+              if (gpaResult != null)
+                Text(
+                  "Predicted GPA: $gpaResult",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.accentPurple,
                   ),
                 ),
-              ),
             ],
           ),
         ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:health_example/screens/feature_screen/feature.dart';
+import 'package:health_example/screens/feature_screen/features_page.dart';
 import 'package:health_example/screens/feature_screen/study_timer.dart';
 import 'package:health_example/screens/feature_screen/stress_screen.dart';
 import 'package:health_example/services/shared_data.dart';
@@ -80,7 +82,10 @@ class StudentPredictionApp extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/signup': (context) => SignUpPage(),
         '/home': (context) => HomeScreen(),
-        '/profile': (context) => ProfileScreen(),
+        '/profile': (context) => ProfileScreen(
+                          username: 'Guest User',
+                          email: 'guest@example.com',
+                          photoUrl: 'assets/images/profile.png',),
         '/notifications': (context) => NotificationsScreen(),
         '/settings': (context) => SettingsScreen(),
         '/health': (context) => HealthApp(),
@@ -89,6 +94,8 @@ class StudentPredictionApp extends StatelessWidget {
               sleepHours: 0,
               activityMinutes: 0, socialHours: 0,
             ),
+        '/features': (context) => FeaturesPage(),
+
       },
     );
   }

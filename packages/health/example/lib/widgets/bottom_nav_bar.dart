@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:health_example/screens/feature_screen/features_page.dart';
 import '../screens/feature_screen/stress_screen.dart';
 import '../screens/feature_screen/gpa_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/navbarscreens/profile_screen.dart';
 import '../screens/navbarscreens/notifications_screen.dart';
 import '../screens/navbarscreens/settings_screen.dart';
+import '../screens/feature_screen/features_page.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -13,63 +15,7 @@ class BottomNavBar extends StatelessWidget {
   const BottomNavBar(
       {super.key, required this.currentIndex, required this.onTap});
 
-  void _showPredictionOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.health_and_safety, color: Colors.white),
-                title: Text("Stress Prediction",
-                    style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StressScreen(
-                        averageStudyHours: null,
-                        sleepHours: 0,
-                        activityMinutes: 0,
-                        socialHours: 0, // Add default value
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.school, color: Colors.white),
-                title: Text("GPA Prediction",
-                    style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => GPAScreen(
-                        averageStudyHours: null,
-                        sleepHours: 0, // Default value
-                        activityMinutes: 0, // Default value
-                        socialHours: 0,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+
 
   void _navigateToScreen(BuildContext context, int index) {
     Widget screen;
@@ -78,11 +24,15 @@ class BottomNavBar extends StatelessWidget {
         screen = HomeScreen();
         break;
       case 1:
-        screen = ProfileScreen();
+        screen = ProfileScreen(
+          username: 'Guest User',
+          email: 'guest@example.com',
+          photoUrl: 'assets/images/profile.png',
+        );
         break;
       case 2:
-        _showPredictionOptions(context);
-        return; // Exit function since we don't navigate immediately
+        screen = FeaturesPage();
+        break; // Exit function since we don't navigate immediately
       case 3:
         screen = NotificationsScreen();
         break;
@@ -119,7 +69,7 @@ class BottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.analytics),
-          label: "Predict",
+          label: "Tools",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.notifications),

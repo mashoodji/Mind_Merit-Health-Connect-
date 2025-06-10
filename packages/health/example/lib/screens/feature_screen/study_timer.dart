@@ -3,9 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-import 'gpa_screen.dart';
-import 'stress_screen.dart';
-
 class StudyTimerPage extends StatefulWidget {
   const StudyTimerPage({super.key});
 
@@ -17,9 +14,9 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
   DateTime? _studyStart;
   Map<String, int> _dailyMinutes = {};
   bool _isStudying = false;
-  bool _showSummary = false;
   final TextEditingController _hourController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTime _currentMonth = DateTime.now();
+  final int _monthlyGoal = 59 * 60; // 59 hours in minutes
 
   @override
   void initState() {
@@ -70,7 +67,7 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
     final manualHours = int.tryParse(_hourController.text);
     if (manualHours != null && manualHours > 0) {
       final minutes = manualHours * 60;
-      final key = _formatDate(_selectedDate);
+      final key = _formatDate(DateTime.now());
 
       _dailyMinutes.update(key, (value) => value + minutes,
           ifAbsent: () => minutes);
@@ -85,199 +82,447 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
   String _formatDate(DateTime dt) =>
       '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
 
-  List<Widget> _buildStudySummary() {
-    final sortedKeys = _dailyMinutes.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
-    return sortedKeys.take(7).map((date) {
-      final hrs = (_dailyMinutes[date]! / 60).toStringAsFixed(1);
-      return ListTile(
-        title: Text(date, style: TextStyle(fontWeight: FontWeight.bold)),
-        trailing:
-            Text('$hrs hrs', style: TextStyle(fontWeight: FontWeight.w600)),
-      );
-    }).toList();
+  int _getTodayMinutes() {
+    final todayKey = _formatDate(DateTime.now());
+    return _dailyMinutes[todayKey] ?? 0;
   }
 
-  double _calculateAverageStudyHours() {
-    final sortedKeys = _dailyMinutes.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
-    final recentKeys = sortedKeys.take(7).toList();
-
-    if (recentKeys.isEmpty) return 0;
-
-    int totalMinutes = 0;
-    for (var key in recentKeys) {
-      totalMinutes += _dailyMinutes[key]!;
+  int _getWeekMinutes() {
+    final now = DateTime.now();
+    int total = 0;
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: i));
+      final key = _formatDate(date);
+      total += _dailyMinutes[key] ?? 0;
     }
-
-    return totalMinutes / 60 / recentKeys.length;
+    return total;
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+  int _getMonthMinutes() {
+    final now = DateTime.now();
+    int total = 0;
+    for (int day = 1; day <= now.day; day++) {
+      final date = DateTime(now.year, now.month, day);
+      final key = _formatDate(date);
+      total += _dailyMinutes[key] ?? 0;
     }
+    return total;
+  }
+
+  int _getCurrentMonthMinutes() {
+    int total = 0;
+    final daysInMonth = DateUtils.getDaysInMonth(_currentMonth.year, _currentMonth.month);
+    for (int day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+      final key = _formatDate(date);
+      total += _dailyMinutes[key] ?? 0;
+    }
+    return total;
+  }
+
+  int _getCurrentMonthSessions() {
+    int count = 0;
+    final daysInMonth = DateUtils.getDaysInMonth(_currentMonth.year, _currentMonth.month);
+    for (int day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+      final key = _formatDate(date);
+      if (_dailyMinutes.containsKey(key)) count++;
+    }
+    return count;
+  }
+
+  List<DateTime> _getDaysInMonth() {
+    final firstDay = DateTime(_currentMonth.year, _currentMonth.month, 1);
+    final lastDay = DateTime(_currentMonth.year, _currentMonth.month + 1, 0);
+    final daysInMonth = lastDay.day;
+
+    // Find weekday of first day (0=Sunday, 6=Saturday)
+    int firstWeekday = firstDay.weekday % 7; // Convert to 0-based
+
+    List<DateTime> days = [];
+    // Add empty days for alignment
+    for (int i = 0; i < firstWeekday; i++) {
+      days.add(DateTime(0));
+    }
+
+    // Add actual days of month
+    for (int i = 1; i <= daysInMonth; i++) {
+      days.add(DateTime(_currentMonth.year, _currentMonth.month, i));
+    }
+
+    return days;
+  }
+
+  void _goToPreviousMonth() {
+    setState(() {
+      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1, 1);
+    });
+  }
+
+  void _goToNextMonth() {
+    setState(() {
+      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 1);
+    });
+  }
+
+  void _goToCurrentMonth() {
+    setState(() {
+      _currentMonth = DateTime.now();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final averageStudyHours = _calculateAverageStudyHours();
+    final todayMinutes = _getTodayMinutes();
+    final weekMinutes = _getWeekMinutes();
+    final monthMinutes = _getMonthMinutes();
+    final currentMonthMinutes = _getCurrentMonthMinutes();
+    final currentMonthSessions = _getCurrentMonthSessions();
+    final progressPercent = (currentMonthMinutes / _monthlyGoal * 100).clamp(0, 100);
+    final daysInMonth = _getDaysInMonth();
+    final monthName = DateFormat('MMMM yyyy').format(_currentMonth);
 
     return Scaffold(
-      backgroundColor: Color(0xFFEEF2F7),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('📘 Study Tracker'),
+        title: const Text('Study Tracker'),
         centerTitle: true,
-        backgroundColor: Color(0xFF0D47A1),
-        elevation: 4,
+        backgroundColor: Colors.blue.shade800,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildCard(
-              title: 'Manual Entry',
-              icon: Icons.edit_calendar_rounded,
-              child: Column(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => _selectDate(context),
-                    icon: Icon(Icons.calendar_today),
-                    label: Text('Select Date'),
-                    style: _buttonStyle(),
-                  ),
-                  SizedBox(height: 8),
-                  Text('Selected: $formattedDate'),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _hourController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Enter study hours',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: Icon(Icons.access_time),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: _manualAddStudy,
-                    icon: Icon(Icons.add),
-                    label: Text('Add Manual Hours'),
-                    style: _buttonStyle(primary: Color(0xFF00BFA5)),
-                  ),
-                ],
+            // Calendar Section
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            _buildCard(
-              title: 'Study Session',
-              icon: Icons.timer_outlined,
-              child: Column(
-                children: [
-                  Text(
-                    _isStudying
-                        ? '🟢 Session is Active'
-                        : '🔴 Session not started.',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: _isStudying ? _stopStudy : _startStudy,
-                    icon: Icon(_isStudying
-                        ? Icons.stop_circle
-                        : Icons.play_circle_fill),
-                    label: Text(_isStudying ? 'Stop Session' : 'Start Session'),
-                    style: _buttonStyle(
-                      primary: _isStudying ? Colors.redAccent : Colors.green,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Calendar Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.chevron_left),
+                          onPressed: _goToPreviousMonth,
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              'Calendar',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _goToCurrentMonth,
+                              child: Text(
+                                'Go to current month',
+                                style: TextStyle(color: Colors.blue.shade800),
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.chevron_right),
+                          onPressed: _goToNextMonth,
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            _buildCard(
-              title: 'Study Summary',
-              icon: Icons.bar_chart_rounded,
-              child: Column(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _showSummary = !_showSummary;
-                      });
-                    },
-                    icon: Icon(
-                        _showSummary ? Icons.visibility_off : Icons.visibility),
-                    label: Text(_showSummary ? 'Hide Summary' : 'Show Summary'),
-                    style: _buttonStyle(primary: Color(0xFF1976D2)),
-                  ),
-                  if (_showSummary) ...[
-                    SizedBox(height: 15),
+
+                    // Month and Stats
                     Text(
-                      'Last 7 Days',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      monthName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    Divider(),
-                    SizedBox(
-                      height: 200,
-                      child: ListView(children: _buildStudySummary()),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              'Study time',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              '${(currentMonthMinutes / 60).toStringAsFixed(1)}h',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              'Goal',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              '${(_monthlyGoal / 60).toStringAsFixed(0)}h',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              'Sessions',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              '$currentMonthSessions',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 8),
+
+                    // Progress
                     Text(
-                      '📊 Average: ${averageStudyHours.toStringAsFixed(1)} hrs/day',
+                      '${progressPercent.toStringAsFixed(0)}% of monthly goal',
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.indigo),
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: progressPercent / 100,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      minHeight: 8,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Weekday headers
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 7,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: 7,
+                      itemBuilder: (context, index) {
+                        final weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+                        return Center(
+                          child: Text(
+                            weekdays[index],
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Calendar days grid
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 7,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: daysInMonth.length,
+                      itemBuilder: (context, index) {
+                        final day = daysInMonth[index];
+                        if (day.year == 0) {
+                          return Container(); // Empty day for alignment
+                        }
+
+                        final key = _formatDate(day);
+                        final minutes = _dailyMinutes[key] ?? 0;
+                        final hours = (minutes / 60).toStringAsFixed(1);
+
+                        return Container(
+                          margin: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade200),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${day.day}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: minutes > 0 ? Colors.blue : Colors.black,
+                                ),
+                              ),
+                              if (minutes > 0) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$hours h',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
-                ],
+                ),
               ),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => StressScreen(
-                      averageStudyHours: averageStudyHours,
-                      sleepHours: 0,
-                      activityMinutes: 0,
-                      socialHours: 0,
-                    ),
-                  ),
-                );
-              },
-              child: Text('Stress Prediction'),
+
+            const SizedBox(height: 20),
+
+            // Time Summary Cards
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTimeCard('Today', todayMinutes),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTimeCard('Week', weekMinutes),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTimeCard('Month', monthMinutes),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => GPAScreen(
-                      averageStudyHours: averageStudyHours,
-                      sleepHours: 0,
-                      activityMinutes: 0,
-                      socialHours: 0,
+
+            const SizedBox(height: 20),
+
+            // Study Session Controls
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      _isStudying ? 'Session Active' : 'Ready to Study',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                );
-              },
-              child: Text('GPA Prediction'),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isStudying ? _stopStudy : _startStudy,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isStudying ? Colors.red : Colors.blue,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          _isStudying ? 'STOP SESSION' : 'START SESSION',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Manual Entry
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Manual Entry',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _hourController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Hours studied',
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _manualAddStudy,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'ADD MANUAL ENTRY',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -285,44 +530,38 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
     );
   }
 
-  Widget _buildCard(
-      {required String title, required Widget child, required IconData icon}) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 6,
-      color: Colors.white,
-      shadowColor: Colors.blueGrey.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(
-            children: [
-              Icon(icon, color: Colors.blueAccent, size: 28),
-              SizedBox(width: 10),
-              Text(
-                title,
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent),
-              ),
-            ],
-          ),
-          Divider(thickness: 1.2),
-          child,
-        ]),
-      ),
-    );
-  }
+  Widget _buildTimeCard(String period, int minutes) {
+    final hours = (minutes / 60).toStringAsFixed(1);
+    final displayText = minutes < 60 ? '${minutes}m' : '${hours}h';
 
-  ButtonStyle _buttonStyle({Color? primary}) {
-    return ElevatedButton.styleFrom(
-      backgroundColor: primary ?? Color(0xFF42A5F5),
-      foregroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text(
+              period,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              displayText,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade800,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
