@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:health_example/screens/navbarscreens/notifications_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../health.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -19,11 +22,47 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   double _socialHours = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _userName = 'User';
+  bool _loadingName = true;
 
   @override
   void initState() {
     super.initState();
     _loadSocialHours();
+    _loadUserName();
+  }
+
+  void _loadUserName() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            _userName = doc['username'] ?? user.displayName ?? 'User';
+            _loadingName = false;
+          });
+        } else {
+          setState(() {
+            _userName = user.displayName ?? 'User';
+            _loadingName = false;
+          });
+        }
+      } else {
+        setState(() {
+          _loadingName = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _userName = 'User';
+        _loadingName = false;
+      });
+    }
   }
 
   void _loadSocialHours() async {
@@ -115,10 +154,6 @@ class _HomeScreenState extends State<HomeScreen> {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F8FA),
       drawer: DrawerWidget(),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onTap,
-      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.deepPurple,
         onPressed: () {
@@ -171,7 +206,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Icon(Icons.notifications_outlined,
                       color: Colors.black54, size: 30),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                  );
+                },
               ),
               const SizedBox(width: 8),
             ],
@@ -254,11 +293,22 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.grey,
             )),
         const SizedBox(height: 4),
-        Text('Mashood Farid 👋',
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            )),
+        _loadingName
+            ? const SizedBox(
+          height: 24,
+          width: 150,
+          child: LinearProgressIndicator(
+            color: Colors.deepPurple,
+            backgroundColor: Colors.transparent,
+          ),
+        )
+            : Text(
+          '$_userName 👋',
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
         const SizedBox(height: 8),
         Text('Stay on top of your academic and mental well-being ✨',
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -374,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
               value: _socialHours / 12,
               backgroundColor: Colors.deepPurple[100],
               valueColor:
-                  AlwaysStoppedAnimation<Color>(Colors.deepPurple[400]!),
+              AlwaysStoppedAnimation<Color>(Colors.deepPurple[400]!),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -394,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                   onPressed: _showSocialHoursDialog,
                   child: const Text('Update',
@@ -416,45 +466,45 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
             child: _buildPredictionCard(
-          title: 'Stress\nPrediction',
-          icon: Icons.self_improvement,
-          color: Colors.redAccent,
-          description: 'Monitor your mental health',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => StressScreen(
-                  averageStudyHours: null,
-                  sleepHours: 0,
-                  activityMinutes: 0,
-                  socialHours: _socialHours,
-                ),
-              ),
-            );
-          },
-        )),
+              title: 'Stress\nPrediction',
+              icon: Icons.self_improvement,
+              color: Colors.redAccent,
+              description: 'Monitor your mental health',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => StressScreen(
+                      averageStudyHours: null,
+                      sleepHours: 0,
+                      activityMinutes: 0,
+                      socialHours: _socialHours,
+                    ),
+                  ),
+                );
+              },
+            )),
         const SizedBox(width: 16),
         Expanded(
             child: _buildPredictionCard(
-          title: 'GPA\nPrediction',
-          icon: Icons.bar_chart,
-          color: Colors.green,
-          description: 'Forecast your performance',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => GPAScreen(
-                  averageStudyHours: null,
-                  sleepHours: 0,
-                  activityMinutes: 0,
-                  socialHours: _socialHours,
-                ),
-              ),
-            );
-          },
-        )),
+              title: 'GPA\nPrediction',
+              icon: Icons.bar_chart,
+              color: Colors.green,
+              description: 'Forecast your performance',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GPAScreen(
+                      averageStudyHours: null,
+                      sleepHours: 0,
+                      activityMinutes: 0,
+                      socialHours: _socialHours,
+                    ),
+                  ),
+                );
+              },
+            )),
       ],
     );
   }
@@ -656,9 +706,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     rightTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     topTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   borderData: FlBorderData(
                     show: true,

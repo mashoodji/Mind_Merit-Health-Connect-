@@ -52,6 +52,10 @@ class AppColors {
 
   // Other Colors
   static const Color divider = Color(0xFFE0E0E0);
-  static const Color shadow = Color(0x1A000000);
   static const Color overlay = Color(0x33000000);
+  static const Color navBackground = Color(0xFFF7F8FA); // Deep dark background
+  static const Color gradientBlue = Color(0xFF9D50BB);  // Active icon/text color
+  static const Color gradientLightBlue = Color(0xFFB3E5FC); // Soft background for active
+  static const Color iconInactive = Color(0xFF8E8E93); // Subtle gray
+  static const Color shadow = Color(0x22000000);
 }

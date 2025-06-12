@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:health_example/screens/feature_screen/feature.dart';
 import 'package:health_example/screens/feature_screen/features_page.dart';
 import 'package:health_example/screens/feature_screen/study_timer.dart';
 import 'package:health_example/screens/feature_screen/stress_screen.dart';
 import 'package:health_example/services/shared_data.dart';
+import 'package:health_example/widgets/main_navigation_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -81,11 +81,8 @@ class StudentPredictionApp extends StatelessWidget {
         '/onboarding': (context) => OnboardingScreen(),
         '/login': (context) => LoginPage(),
         '/signup': (context) => SignUpPage(),
-        '/home': (context) => HomeScreen(),
-        '/profile': (context) => ProfileScreen(
-                          username: 'Guest User',
-                          email: 'guest@example.com',
-                          photoUrl: 'assets/images/profile.png',),
+        '/home': (context) => MainNavigationScreen(),
+        '/profile': (context) => ProfileScreen(),
         '/notifications': (context) => NotificationsScreen(),
         '/settings': (context) => SettingsScreen(),
         '/health': (context) => HealthApp(),

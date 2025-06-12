@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../home_screen.dart';
 import '../navbarscreens/profile_screen.dart';
 
 
@@ -97,11 +98,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => ProfileScreen(
-              username: username,
-              email: email,
-              photoUrl: photoUrl,
-            ),
+            builder: (_) => HomeScreen(),
           ),
         );
       }
@@ -142,9 +139,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (_) => ProfileScreen(
-            username: username,
-            email: email,
-            photoUrl: photoUrl,
+
           ),
         ),
       );

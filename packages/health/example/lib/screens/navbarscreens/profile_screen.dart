@@ -2,21 +2,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:health_example/screens/navbarscreens/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // For image upload
-import 'package:cloud_firestore/cloud_firestore.dart'; // For username storage
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:health_example/utils/colors1.dart';
+
+import '../feature_screen/gpa_screen.dart';
+import '../feature_screen/stress_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final String username, email, photoUrl;
+  const ProfileScreen({super.key});
 
-  const ProfileScreen({
-    super.key,
-    required this.username,
-    required this.email,
-    required this.photoUrl,
-  });
-  @override State<ProfileScreen> createState() => _ProfileScreenState();
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
@@ -29,17 +29,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedTab = 3;
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
-  String _currentUsername = '';
+  String _currentUsername = 'Loading...';
+  String _currentEmail = 'Loading...';
   String? _currentPhotoUrl;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadUserData();
     _loadPrefs();
-    _currentUsername = widget.username;
-    _currentPhotoUrl = widget.photoUrl;
-    _usernameController.text = _currentUsername;
-    _emailController.text = widget.email;
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final doc = await _firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          setState(() {
+            _currentUsername = doc.data()?['username'] ?? user.displayName ?? 'No username';
+            _currentEmail = user.email ?? 'No email';
+            _currentPhotoUrl = doc.data()?['photoUrl'] ?? user.photoURL;
+            _usernameController.text = _currentUsername;
+            _emailController.text = _currentEmail;
+            _isLoading = false;
+          });
+        } else {
+          await _firestore.collection('users').doc(user.uid).set({
+            'username': user.displayName ?? 'New User',
+            'email': user.email,
+            'photoUrl': user.photoURL,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          _loadUserData();
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _currentUsername = 'Error loading data';
+        _currentEmail = 'Error loading data';
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading profile: ${e.toString()}')),
+      );
+    }
   }
 
   Future<void> _loadPrefs() async {
@@ -55,16 +90,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        // Update in Firestore
+        setState(() => _isLoading = true);
         await _firestore.collection('users').doc(user.uid).update({
           'username': newUsername,
+          'updatedAt': FieldValue.serverTimestamp(),
         });
-
-        setState(() {
-          _currentUsername = newUsername;
-        });
+        await _loadUserData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Username updated successfully!')),
+        );
       }
     } catch (e) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update username: ${e.toString()}')),
       );
@@ -75,42 +112,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        // Upload to Firebase Storage
+        setState(() => _isLoading = true);
         final ref = _storage.ref().child('profile_pictures/${user.uid}.jpg');
         await ref.putFile(imageFile);
         final url = await ref.getDownloadURL();
 
-        // Update in Firestore
         await _firestore.collection('users').doc(user.uid).update({
           'photoUrl': url,
+          'updatedAt': FieldValue.serverTimestamp(),
         });
 
-        setState(() {
-          _currentPhotoUrl = url;
-          _pickedImage = imageFile;
-        });
+        await _loadUserData();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile picture updated successfully!')),
+        );
       }
     } catch (e) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update profile picture: ${e.toString()}')),
       );
     }
   }
 
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!_rememberMe) await prefs.clear();
-    await _auth.signOut();
-    if (_isGoogle) await GoogleSignIn().signOut();
-    Navigator.pushReplacementNamed(context, '/login');
-  }
-
   Future<void> _pickImage() async {
     try {
       final file = await _picker.pickImage(source: ImageSource.gallery);
       if (file != null) {
-        final imageFile = File(file.path);
-        await _updateProfilePicture(imageFile);
+        await _updateProfilePicture(File(file.path));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,12 +151,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _avatar() {
     ImageProvider? img;
-    if (_isGoogle && _currentPhotoUrl?.isNotEmpty == true) {
-      img = NetworkImage(_currentPhotoUrl!) as ImageProvider;
+    if (_currentPhotoUrl?.isNotEmpty == true) {
+      img = NetworkImage(_currentPhotoUrl!);
     } else if (_pickedImage != null) {
-      img = FileImage(_pickedImage!) as ImageProvider;
-    } else if (_currentPhotoUrl?.isNotEmpty == true) {
-      img = NetworkImage(_currentPhotoUrl!) as ImageProvider;
+      img = FileImage(_pickedImage!);
     }
 
     return GestureDetector(
@@ -134,13 +162,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Stack(
         children: [
           CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.grey[200],
+            radius: 45,
+            backgroundColor: AppColors.cardBackground,
             backgroundImage: img,
             child: img == null
                 ? Text(
               _currentUsername.isNotEmpty ? _currentUsername[0].toUpperCase() : '?',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.iconSecondary),
             )
                 : null,
           ),
@@ -149,12 +177,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               bottom: 0,
               right: 0,
               child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: AppColors.accentBlue,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.edit, size: 16, color: Colors.white),
+                child: const Icon(Icons.edit, size: 18, color: Colors.white),
               ),
             ),
         ],
@@ -164,34 +192,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _menuItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(title, style: TextStyle(fontSize: 16)),
-      trailing: Icon(Icons.chevron_right, color: Colors.grey),
+      leading: Icon(icon, color: AppColors.iconPrimary),
+      title: Text(title, style: const TextStyle(fontSize: 16, color: AppColors.textPrimary)),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.iconInactive),
       onTap: onTap,
-    );
-  }
-
-  Widget _metricCard(String label, double percent, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: percent,
-              minHeight: 8,
-              backgroundColor: color.withOpacity(0.3),
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text("${(percent * 100).toInt()}%", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-        ],
-      ),
     );
   }
 
@@ -200,45 +204,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          GestureDetector(
-            onTap: _isGoogle ? null : _pickImage,
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: _pickedImage != null
-                      ? FileImage(_pickedImage!) as ImageProvider
-                      : (_currentPhotoUrl?.isNotEmpty == true
-                      ? NetworkImage(_currentPhotoUrl!) as ImageProvider
-                      : null),
-                  child: _pickedImage == null && (_currentPhotoUrl?.isEmpty ?? true)
-                      ? Text(
-                    _currentUsername.isNotEmpty ? _currentUsername[0].toUpperCase() : '?',
-                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black54),
-                  )
-                      : null,
-                ),
-                if (!_isGoogle)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.edit, size: 20, color: Colors.white),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
+          _avatar(),
+          const SizedBox(height: 24),
           TextField(
             controller: _usernameController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Username',
               border: OutlineInputBorder(),
             ),
@@ -246,7 +216,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _emailController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Email',
               border: OutlineInputBorder(),
             ),
@@ -258,11 +228,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (_usernameController.text.trim().isNotEmpty) {
                 await _updateUsername(_usernameController.text.trim());
               }
-              Navigator.pop(context);
+              if (mounted) Navigator.pop(context);
             },
-            child: Text('Save Changes'),
+            child: const Text('Save Changes'),
             style: ElevatedButton.styleFrom(
-              minimumSize: Size(double.infinity, 50),
+              backgroundColor: AppColors.buttonPrimary,
+              foregroundColor: AppColors.textLight,
+              minimumSize: const Size(double.infinity, 50),
             ),
           ),
         ],
@@ -270,102 +242,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildMoreFromApp() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Text(
+            'More from App',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          ),
+        ),
+        _menuItem(Icons.school, "GPA Predictor", () {
+          Navigator.push(context,
+              MaterialPageRoute(builder:
+                  (context) => const
+                  GPAScreen(sleepHours: 0, activityMinutes: 0, socialHours: 0, averageStudyHours: 0,)));
+
+        }),
+        const Divider(height: 1, color: AppColors.divider),
+        _menuItem(Icons.self_improvement, "Stress Analyzer", () {
+          Navigator.push(context,
+              MaterialPageRoute(builder:
+                  (context) => const
+              StressScreen(sleepHours: 0, activityMinutes: 0, socialHours: 0,)));
+        }),
+      ],
+    );
+  }
+
   Widget _buildContent() {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(20),
-            color: Colors.white,
+            color: AppColors.cardBackground,
             child: Row(
               children: [
                 _avatar(),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_currentUsername, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(_currentUsername, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                     const SizedBox(height: 4),
-                    Text(widget.email, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                    Text(_currentEmail, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
                   ],
                 ),
               ],
             ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Health & Academic Progress",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-                Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        _metricCard("Stress Level", 0.55, Colors.redAccent),
-                        _metricCard("GPA Score", 0.76, Colors.teal),
-                        _metricCard("Physical Activity", 0.9, Colors.orange),
-                        _metricCard("Social Hours", 0.65, Colors.purple),
-                        _metricCard("Sleep Cycle", 0.8, Colors.indigo),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
+          const SizedBox(height: 10),
           Container(
-            color: Colors.white,
+            color: AppColors.cardBackground,
             child: Column(
               children: [
                 _menuItem(Icons.edit, "Edit Profile", () {
                   Navigator.push(context, MaterialPageRoute(
                     builder: (context) => Scaffold(
-                      appBar: AppBar(title: Text("Edit Profile")),
+                      appBar: AppBar(
+                        title: const Text("Edit Profile"),
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.textLight,
+                        leading: const BackButton(color: Colors.white),
+                      ),
                       body: _buildEditProfile(),
                     ),
                   ));
                 }),
-                const Divider(height: 1),
+                const Divider(height: 1, color: AppColors.divider),
                 _menuItem(Icons.settings, "Settings", () {
-                  // Navigate to settings page
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
                 }),
-                const Divider(height: 1),
-                _menuItem(Icons.credit_card, "Billing Details", () {
-                  // Navigate to billing details
-                }),
-                const Divider(height: 1),
+                const Divider(height: 1, color: AppColors.divider),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: ElevatedButton(
-              onPressed: _logout,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.red,
-                backgroundColor: Colors.white,
-                side: BorderSide(color: Colors.red),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: const Text("Logout", style: TextStyle(fontSize: 16)),
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          _buildMoreFromApp(),
         ],
       ),
     );
@@ -374,13 +332,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Profile", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        centerTitle: true,
+        title: const Text('Profile'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textLight,
+        leading: const BackButton(color: Colors.white),
       ),
       body: _buildContent(),
     );
