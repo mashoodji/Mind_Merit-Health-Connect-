@@ -264,23 +264,19 @@ class _StressScreenState extends State<StressScreen> {
   }
 
   Widget buildBarChart(Map<String, double> data) {
-    final bars = data.entries.map((entry) => BarChartRodData(
-      toY: entry.value,
-      color: AppColors.primary,
-      width: 20,
-      borderRadius: BorderRadius.circular(4),
-      backDrawRodData: BackgroundBarChartRodData(
-        show: true,
-        toY: 1.0,
-        color: AppColors.divider,
-      ),
-    )).toList();
+    // Sort features by importance (descending)
+    final sortedEntries = data.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
-    final labels = data.keys.toList();
+    // Normalize values to 0-1 range for better visualization
+    final maxValue = sortedEntries.first.value.toDouble();
+    final normalizedData = Map.fromEntries(
+        sortedEntries.map((e) => MapEntry(e.key, maxValue > 0 ? e.value.toDouble() / maxValue : 0.0))
+    );
 
     return Container(
-      height: 250,
-      padding: EdgeInsets.symmetric(vertical: 16),
+      height: 300,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
@@ -288,58 +284,86 @@ class _StressScreenState extends State<StressScreen> {
             enabled: true,
             touchTooltipData: BarTouchTooltipData(
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final feature = sortedEntries[groupIndex].key;
+                final originalValue = sortedEntries[groupIndex].value;
                 return BarTooltipItem(
-                  '${labels[groupIndex]}\n${rod.toY.toStringAsFixed(2)}',
-                  TextStyle(
-                    color: AppColors.textLight,
+                  '$feature\n${originalValue.toStringAsFixed(3)}',
+                  const TextStyle(
+                    color: Colors.white,
                     fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 );
               },
               tooltipMargin: 8,
-              tooltipPadding: EdgeInsets.all(8),
+              tooltipPadding: const EdgeInsets.all(8),
               tooltipRoundedRadius: 8,
-              getTooltipColor: (group) => AppColors.primary.withOpacity(0.8),
+              getTooltipColor: (group) => AppColors.primary.withOpacity(0.9),
+              fitInsideHorizontally: true,
             ),
           ),
-          barGroups: List.generate(bars.length, (index) {
+          barGroups: List.generate(normalizedData.length, (index) {
+            final value = normalizedData.values.elementAt(index).toDouble();
             return BarChartGroupData(
               x: index,
-              barRods: [bars[index]],
+              barRods: [
+                BarChartRodData(
+                  toY: value,
+                  color: _getGradientColor(value),
+                  width: 22,
+                  borderRadius: BorderRadius.circular(4),
+                  backDrawRodData: BackgroundBarChartRodData(
+                    show: true,
+                    toY: 1.0,
+                    color: AppColors.divider.withOpacity(0.3),
+                  ),
+                ),
+              ],
             );
           }),
           titlesData: FlTitlesData(
+            show: true,
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 30,
+                reservedSize: 40,
                 getTitlesWidget: (value, meta) {
-                  return Text(
-                    value.toStringAsFixed(1),
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 10,
-                    ),
-                  );
+                  if (value % 0.2 == 0) { // Show labels at 0, 0.2, 0.4, etc.
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        value.toStringAsFixed(1),
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 10,
+                        ),
+                      ),
+                    );
+                  }
+                  return Container();
                 },
+                interval: 0.2,
               ),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 40,
+                reservedSize: 42,
                 getTitlesWidget: (value, meta) {
                   final idx = value.toInt();
-                  if (idx >= 0 && idx < labels.length) {
+                  if (idx >= 0 && idx < sortedEntries.length) {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        labels[idx],
+                        sortedEntries[idx].key.replaceAll('_', '\n'),
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 10,
+                          fontWeight: FontWeight.w500,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
                       ),
                     );
                   }
@@ -354,14 +378,40 @@ class _StressScreenState extends State<StressScreen> {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: AppColors.divider,
+              color: AppColors.divider.withOpacity(0.5),
               strokeWidth: 0.5,
+              dashArray: [4, 4],
+            ),
+            checkToShowHorizontalLine: (value) => value % 0.2 == 0,
+          ),
+          borderData: FlBorderData(
+            show: true,
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.divider.withOpacity(0.5),
+                width: 1,
+              ),
+              left: BorderSide(
+                color: AppColors.divider.withOpacity(0.5),
+                width: 1,
+              ),
             ),
           ),
-          borderData: FlBorderData(show: false),
         ),
       ),
     );
+  }
+
+  Color _getGradientColor(double value) {
+    // Convert to double to ensure type safety
+    final double normalizedValue = value.toDouble();
+
+    // Create a gradient color based on value (0-1)
+    if (normalizedValue < 0.3) {
+      return Color.lerp(AppColors.success, Colors.orange, normalizedValue / 0.3)!;
+    } else {
+      return Color.lerp(Colors.orange, AppColors.error, (normalizedValue - 0.3) / 0.7)!;
+    }
   }
 
   @override

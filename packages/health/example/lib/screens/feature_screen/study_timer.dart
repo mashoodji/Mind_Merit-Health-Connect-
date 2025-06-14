@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../../utils/colors1.dart';
 
 class StudyTimerPage extends StatefulWidget {
   const StudyTimerPage({super.key});
@@ -183,25 +184,88 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
     final monthName = DateFormat('MMMM yyyy').format(_currentMonth);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Study Tracker'),
-        centerTitle: true,
-        backgroundColor: Colors.blue.shade800,
+        title: Text('Study Tracker', style: TextStyle(
+          color: AppColors.textLight,
+          fontWeight: FontWeight.bold,
+        )),
+        backgroundColor: AppColors.primary,
         elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.textLight),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Hero Card
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                    offset: Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.timer, color: AppColors.textLight, size: 40),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Study Tracker",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textLight,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "Track your study sessions and progress",
+                          style: TextStyle(
+                            color: AppColors.textLight.withOpacity(0.9),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 24),
+
+            // Time Summary Cards
+            Row(
+              children: [
+                Expanded(child: _buildTimeCard("Today", todayMinutes)),
+                SizedBox(width: 12),
+                Expanded(child: _buildTimeCard("This Week", weekMinutes)),
+                SizedBox(width: 12),
+                Expanded(child: _buildTimeCard("This Month", monthMinutes)),
+              ],
+            ),
+            SizedBox(height: 24),
+
             // Calendar Section
             Card(
-              elevation: 4,
+              elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              shadowColor: AppColors.shadow,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
                     // Calendar Header
@@ -209,140 +273,77 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.chevron_left),
+                          icon: Icon(Icons.chevron_left, color: AppColors.primary),
                           onPressed: _goToPreviousMonth,
                         ),
-                        Column(
-                          children: [
-                            Text(
-                              'Calendar',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade800,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: _goToCurrentMonth,
-                              child: Text(
-                                'Go to current month',
-                                style: TextStyle(color: Colors.blue.shade800),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          monthName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.chevron_right),
+                          icon: Icon(Icons.chevron_right, color: AppColors.primary),
                           onPressed: _goToNextMonth,
                         ),
                       ],
                     ),
-
-                    // Month and Stats
-                    Text(
-                      monthName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                    SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _goToCurrentMonth,
+                      child: Text(
+                        'Current Month',
+                        style: TextStyle(color: AppColors.primary),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
+                    // Stats
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
-                          children: [
-                            Text(
-                              'Study time',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            Text(
-                              '${(currentMonthMinutes / 60).toStringAsFixed(1)}h',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              'Goal',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            Text(
-                              '${(_monthlyGoal / 60).toStringAsFixed(0)}h',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              'Sessions',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            Text(
-                              '$currentMonthSessions',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                        _buildStatCard("Study Time", "${(currentMonthMinutes / 60).toStringAsFixed(1)}h"),
+                        _buildStatCard("Goal", "${(_monthlyGoal / 60).toStringAsFixed(0)}h"),
+                        _buildStatCard("Sessions", "$currentMonthSessions"),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 16),
 
                     // Progress
+                    LinearProgressIndicator(
+                      value: progressPercent / 100,
+                      backgroundColor: AppColors.divider,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      minHeight: 8,
+                    ),
+                    SizedBox(height: 8),
                     Text(
                       '${progressPercent.toStringAsFixed(0)}% of monthly goal',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: progressPercent / 100,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                      minHeight: 8,
-                    ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
                     // Weekday headers
                     GridView.builder(
                       shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      physics: NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 7,
                         childAspectRatio: 1,
                       ),
                       itemCount: 7,
                       itemBuilder: (context, index) {
-                        final weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+                        final weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
                         return Center(
                           child: Text(
                             weekdays[index],
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade600,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         );
@@ -352,27 +353,26 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                     // Calendar days grid
                     GridView.builder(
                       shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      physics: NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 7,
                         childAspectRatio: 1,
                       ),
                       itemCount: daysInMonth.length,
                       itemBuilder: (context, index) {
                         final day = daysInMonth[index];
-                        if (day.year == 0) {
-                          return Container(); // Empty day for alignment
-                        }
+                        if (day.year == 0) return Container();
 
                         final key = _formatDate(day);
                         final minutes = _dailyMinutes[key] ?? 0;
                         final hours = (minutes / 60).toStringAsFixed(1);
 
                         return Container(
-                          margin: const EdgeInsets.all(2),
+                          margin: EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade200),
-                            borderRadius: BorderRadius.circular(4),
+                            color: minutes > 0 ? AppColors.primary.withOpacity(0.1) : null,
+                            border: Border.all(color: AppColors.divider),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -381,16 +381,16 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                                 '${day.day}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: minutes > 0 ? Colors.blue : Colors.black,
+                                  color: minutes > 0 ? AppColors.primary : AppColors.textPrimary,
                                 ),
                               ),
                               if (minutes > 0) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Text(
                                   '$hours h',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.blue,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.primary,
                                   ),
                                 ),
                               ],
@@ -403,63 +403,45 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            // Time Summary Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTimeCard('Today', todayMinutes),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTimeCard('Week', weekMinutes),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTimeCard('Month', monthMinutes),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
+            SizedBox(height: 24),
 
             // Study Session Controls
             Card(
-              elevation: 4,
+              elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              shadowColor: AppColors.shadow,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Text(
                       _isStudying ? 'Session Active' : 'Ready to Study',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _isStudying ? _stopStudy : _startStudy,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _isStudying ? Colors.red : Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: _isStudying ? AppColors.error : AppColors.primary,
+                          padding: EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: Text(
                           _isStudying ? 'STOP SESSION' : 'START SESSION',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textLight,
                           ),
                         ),
                       ),
@@ -468,54 +450,71 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
+            SizedBox(height: 24),
 
             // Manual Entry
             Card(
-              elevation: 4,
+              elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              shadowColor: AppColors.shadow,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Manual Entry',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 16),
                     TextField(
                       controller: _hourController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Hours studied',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.timer),
+                        labelStyle: TextStyle(color: AppColors.textSecondary),
+                        prefixIcon: Icon(Icons.timer, color: AppColors.primary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.cardBackground,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
+                      style: TextStyle(color: AppColors.textPrimary),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _manualAddStudy,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: AppColors.primary,
+                          padding: EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'ADD MANUAL ENTRY',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textLight,
                           ),
                         ),
                       ),
@@ -524,13 +523,14 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
                 ),
               ),
             ),
+            SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTimeCard(String period, int minutes) {
+  Widget _buildTimeCard(String title, int minutes) {
     final hours = (minutes / 60).toStringAsFixed(1);
     final displayText = minutes < 60 ? '${minutes}m' : '${hours}h';
 
@@ -539,29 +539,52 @@ class _StudyTimerPageState extends State<StudyTimerPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+      shadowColor: AppColors.shadow,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
-              period,
+              title,
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               displayText,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue.shade800,
+                color: AppColors.primary,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
+        ),
+      ],
     );
   }
 }

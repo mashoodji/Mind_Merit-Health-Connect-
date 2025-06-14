@@ -45,9 +45,7 @@ class AppColors {
   );
 
   // State Colors
-  static const Color success = Colors.green;
   static const Color warning = Colors.orange;
-  static const Color error = Colors.red;
   static const Color info = Colors.blue;
 
   // Other Colors
@@ -58,4 +56,7 @@ class AppColors {
   static const Color gradientLightBlue = Color(0xFFB3E5FC); // Soft background for active
   static const Color iconInactive = Color(0xFF8E8E93); // Subtle gray
   static const Color shadow = Color(0x22000000);
+
+  static const success = Color(0xFF4CAF50);
+  static const error = Color(0xFFF44336);
 }
