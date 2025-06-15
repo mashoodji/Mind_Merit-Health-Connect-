@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../health.dart';
 import '../../services/api_service.dart';
+import '../../services/chatbot_screen.dart';
 import '../../utils/colors1.dart';
 import '../../utils/data_stress_fetcher.dart';
 import 'study_timer.dart';
@@ -204,6 +205,16 @@ class _StressScreenState extends State<StressScreen> {
         gpa: double.parse(gpaController.text),
       );
 
+      await _storeStressPrediction(
+          stressLevel: result["stress_level"],
+          featureImportances: result["feature_importance"],
+          inputValues: {
+            'studyHours': double.parse(studyController.text),
+            'sleepHours': double.parse(sleepController.text),
+            // ... other fields ...
+          }
+      );
+
       setState(() {
         stressResult = result["stress_level"];
         featureImportances = result["feature_importance"];
@@ -214,6 +225,42 @@ class _StressScreenState extends State<StressScreen> {
         featureImportances = null;
       });
     }
+  }
+
+  Future<void> _storeStressPrediction({
+    required String stressLevel,
+    required Map<String, double> featureImportances,
+    required Map<String, double> inputValues,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final gpa = gpaController.text.isNotEmpty
+        ? double.parse(gpaController.text)
+        : null;
+
+    await FirebaseFirestore.instance
+        .collection('user_stress_history')
+        .doc(user.uid)
+        .collection('predictions')
+        .add({
+      'timestamp': FieldValue.serverTimestamp(),
+      'stressLevel': stressLevel,
+      'featureImportances': featureImportances,
+      'inputValues': inputValues,
+      'gpa': gpa, // Store GPA with each prediction
+    });
+
+    // Update both stress and GPA in user profile
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .update({
+      'latestStress': stressLevel,
+      'latestStressDate': FieldValue.serverTimestamp(),
+      'latestGpa': gpa, // Add this line to store GPA
+      'gpaUpdatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   void clearData() {
@@ -586,6 +633,27 @@ class _StressScreenState extends State<StressScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.divider,
                       foregroundColor: AppColors.textPrimary,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+
+                  // In your StressScreen's build method, add to the action buttons:
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ChatBotScreen()),
+                      );
+                    },
+                    icon: Icon(Icons.chat, size: 20),
+                    label: Text("Chat Assistant"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentBlue,
+                      foregroundColor: AppColors.textLight,
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
